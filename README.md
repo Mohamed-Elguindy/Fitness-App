@@ -91,10 +91,6 @@ uvicorn main:app --reload
 cd agentic-fitness-app
 streamlit run app.py
 ```
-   streamlit run app.py
-```
-7. Open `http://localhost:8501` for the UI
-8. Open `http://127.0.0.1:8000/docs` for the API docs
 
 ## API Endpoints
 
