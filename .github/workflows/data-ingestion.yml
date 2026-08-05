@@ -9,6 +9,9 @@ on:
       - 'agentic-fitness-app/experiments/chunking_experiment.py'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-indices:
     runs-on: ubuntu-latest
