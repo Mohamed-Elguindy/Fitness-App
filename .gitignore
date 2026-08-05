@@ -30,3 +30,20 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# LlamaIndex vector storage
+storage/
+
+# Downloaded ML models and cache
+models/
+.cache/
+.huggingface/
+
+# Agent and Documentation stuff
+.agents/
+"FA docs/"
+FA\ docs/
+
+# Data and Papers
+*_papers/
+*papers/
