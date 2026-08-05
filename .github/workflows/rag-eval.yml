@@ -1,0 +1,31 @@
+name: RAG Evaluation Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  evaluate-rag:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+          
+      - name: Run RAG Golden Queries Test
+        working-directory: ./agentic-fitness-app
+        run: |
+          python -m pytest tests/test_rag.py -v
