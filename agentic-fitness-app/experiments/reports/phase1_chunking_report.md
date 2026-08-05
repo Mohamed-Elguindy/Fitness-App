@@ -9,13 +9,14 @@ This report compares local chunking strategies after lightweight PDF preprocessi
 - Hybrid target tokens: `750`
 - Semantic break percentile: `85`
 - Minimum chunk tokens after merge: `50`
-- Local semantic splitter: `active:BAAI/bge-small-en-v1.5`
-- Hybrid JSONL export: `/Users/mahy/Documents/GitHub/Fitness-App/agentic-fitness-app/experiments/reports/phase1_hybrid_chunks.jsonl`
+- Local semantic splitter: `fallback:could not load BAAI/bge-small-en-v1.5`
+- Hybrid JSONL export: `/home/runner/work/Fitness-App/Fitness-App/agentic-fitness-app/experiments/reports/phase1_hybrid_chunks.jsonl`
 
 ## Source PDFs
 
 | Corpus | File | Pages | Parser | Title |
 |---|---|---:|---|---|
+| nutrition | `dummy_test_file_2.pdf` | 18 | `pdfplumber-layout` | Creatine is one of the most popular nutritional ergogenic aids for athletes. Studies have consistently shown that creatine supplementation increases intramuscular creatine concentr |
 | nutrition | `s12970-017-0173-z.pdf` | 18 | `pdfplumber-layout` | International Society of Sports Nutrition Position Stand: Safety and Efficacy of Creatine Supplementation in Exercise, Sport, and Medicine |
 | nutrition | `s12970-017-0174-y.pdf` | 19 | `pdfplumber-layout` | International Society of Sports Nutrition Position Stand: Diets and Body Composition |
 | nutrition | `s12970-017-0177-8.pdf` | 25 | `pdfplumber-layout` | International Society of Sports Nutrition Position Stand: Protein and Exercise |
@@ -30,20 +31,20 @@ This report compares local chunking strategies after lightweight PDF preprocessi
 
 | Strategy | Chunks | Avg Tokens | Min | Under 50 | P90 | Max |
 |---|---:|---:|---:|---:|---:|---:|
-| fixed | 197 | 1343 | 559 | 0 | 1826 | 2760 |
-| structure | 131 | 1428 | 75 | 0 | 2076 | 3445 |
-| hybrid | 472 | 344 | 52 | 0 | 731 | 779 |
+| fixed | 220 | 1352 | 559 | 0 | 1838 | 2760 |
+| structure | 143 | 1417 | 75 | 0 | 2050 | 3445 |
+| hybrid | 273 | 696 | 52 | 0 | 745 | 2345 |
 
 ## Per-Corpus Summary
 
 | Strategy | Corpus | Chunks | Avg Tokens | Min | Under 50 | P90 | Max |
 |---|---|---:|---:|---:|---:|---:|---:|
-| fixed | nutrition | 116 | 1283 | 559 | 0 | 1756 | 1860 |
+| fixed | nutrition | 139 | 1307 | 559 | 0 | 1763 | 1860 |
 | fixed | training | 81 | 1429 | 563 | 0 | 1960 | 2760 |
-| structure | nutrition | 80 | 1430 | 128 | 0 | 2003 | 2297 |
+| structure | nutrition | 92 | 1413 | 128 | 0 | 1934 | 2297 |
 | structure | training | 51 | 1424 | 75 | 0 | 2606 | 3445 |
-| hybrid | nutrition | 304 | 322 | 52 | 0 | 726 | 756 |
-| hybrid | training | 168 | 384 | 52 | 0 | 745 | 779 |
+| hybrid | nutrition | 177 | 691 | 87 | 0 | 745 | 756 |
+| hybrid | training | 96 | 706 | 52 | 0 | 745 | 2345 |
 
 ## Sample Chunks
 
@@ -51,7 +52,7 @@ This report compares local chunking strategies after lightweight PDF preprocessi
 
 **nutrition sample**
 
-- Source: `s12970-017-0173-z.pdf`
+- Source: `dummy_test_file_2.pdf`
 - Section: `full text`
 - Tokens: `1246`
 
@@ -69,7 +70,7 @@ This report compares local chunking strategies after lightweight PDF preprocessi
 
 **nutrition sample**
 
-- Source: `s12970-017-0173-z.pdf`
+- Source: `dummy_test_file_2.pdf`
 - Section: `front matter`
 - Tokens: `128`
 
@@ -87,7 +88,7 @@ This report compares local chunking strategies after lightweight PDF preprocessi
 
 **nutrition sample**
 
-- Source: `s12970-017-0173-z.pdf`
+- Source: `dummy_test_file_2.pdf`
 - Section: `front matter`
 - Tokens: `128`
 
@@ -97,9 +98,9 @@ This report compares local chunking strategies after lightweight PDF preprocessi
 
 - Source: `ACSM-Progression-models-in-resistance-training-for-healthy-adults-2009.pdf`
 - Section: `front matter`
-- Tokens: `113`
+- Tokens: `711`
 
-> SPECIAL COMMUNICATIONS Progression Models in Resistance Training for Healthy Adults POSITION STAND This pronouncement was written for the American College of Sports Medicine by Nicholas A. Ratamess, Ph.D.; Brent A. Alvar, Ph.D.; Tammy K. Evetoch, Ph.D., FACSM; Terry J. Housh, Ph.D., FACSM (Chair); W. Ben Kibler, M.D., FACSM; William J. Kraemer, Ph.D., FACSM; and N. Travis Triplett, Ph.D.
+> SPECIAL COMMUNICATIONS Progression Models in Resistance Training for Healthy Adults POSITION STAND This pronouncement was written for the American College of Sports Medicine by Nicholas A. Ratamess, Ph.D.; Brent A. Alvar, Ph.D.; Tammy K. Evetoch, Ph.D., FACSM; Terry J. Housh, Ph.D., FACSM (Chair); W. Ben Kibler, M.D., FACSM; William J. Kraemer, Ph.D., FACSM; and N. Travis Triplett, Ph.D. SUMMARY withpriorones,recommendationsshouldbeappliedincontextandshouldbe contingent upon an individual’s target goals, physical capacity, and training In order to stimulate further adaptation toward specific training goals, status. Key Words: strength, power, local muscular endurance, fitness, progressive resistance training (RT) protocols are necessary. Th...
 
 ## Initial Read
 
