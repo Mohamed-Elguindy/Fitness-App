@@ -31,8 +31,7 @@ dist/
 build/
 *.egg-info/
 
-# LlamaIndex vector storage
-storage/
+
 
 # Downloaded ML models and cache
 models/
