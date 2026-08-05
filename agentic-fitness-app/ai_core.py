@@ -25,17 +25,12 @@ load_dotenv()
 #LlamaIndexInstrumentor().instrument(skip_dep_check=True)
 
 Settings.llm = Groq(model="llama-3.3-70b-versatile", api_key=os.getenv("GROQ_API_KEY"))
-Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
+from knowledge_base import get_index
 
-# Load documents
-fitness_docs = SimpleDirectoryReader("data/fitness_and_diet").load_data()
-mentality_docs = SimpleDirectoryReader("data/mentality").load_data()
-general_docs = SimpleDirectoryReader("data/general").load_data()
-
-# Build indices
-fitness_index = VectorStoreIndex.from_documents(fitness_docs)
-mentality_index = VectorStoreIndex.from_documents(mentality_docs)
-general_index = VectorStoreIndex.from_documents(general_docs)
+# Load persisted indices (or build if first run)
+fitness_index = get_index("fitness_and_diet")
+mentality_index = get_index("mentality")
+general_index = get_index("general")
 
 # Wrap as tools with descriptions
 fitness_tool = QueryEngineTool.from_defaults(
