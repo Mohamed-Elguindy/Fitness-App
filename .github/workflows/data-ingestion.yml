@@ -1,0 +1,46 @@
+name: Data Ingestion Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'agentic-fitness-app/data/*_papers/*.pdf'
+      - 'agentic-fitness-app/experiments/chunking_experiment.py'
+  workflow_dispatch:
+
+jobs:
+  build-indices:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          
+      - name: Run Chunking Experiment
+        working-directory: ./agentic-fitness-app
+        run: |
+          python experiments/chunking_experiment.py
+          
+      - name: Build Vector Indices
+        working-directory: ./agentic-fitness-app
+        run: |
+          python test_indices.py
+          
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: Auto-update chunking and vector indices [skip ci]"
+          file_pattern: "agentic-fitness-app/storage/* agentic-fitness-app/experiments/reports/*"
