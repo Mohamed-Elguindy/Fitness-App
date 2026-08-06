@@ -9,7 +9,11 @@ app = FastAPI()
 
 @app.post("/coach")
 def coach(request: CoachRequest):
-    response = ask_coach(request.query)
+    prompt = request.query
+    if request.user_context:
+        prompt = f"User's Current Plan Context:\n{request.user_context}\n\nUser Question: {request.query}"
+    
+    response = ask_coach(prompt)
     return {"response": response}
 
 @app.post("/diet-plan")

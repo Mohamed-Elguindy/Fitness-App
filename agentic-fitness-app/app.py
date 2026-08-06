@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import json
 
 st.set_page_config(
     page_title="AI Fitness Coach",
@@ -158,7 +159,17 @@ with tab1:
         if query:
             with st.spinner("Coach is thinking..."):
                 try:
-                    response = requests.post(f"{API_URL}/coach", json={"query": query})
+                    user_context = ""
+                    if "diet_plan" in st.session_state:
+                        user_context += f"My Current Diet Plan:\n{json.dumps(st.session_state.diet_plan, indent=2)}\n\n"
+                    if "training_program" in st.session_state:
+                        user_context += f"My Current Training Program:\n{json.dumps(st.session_state.training_program, indent=2)}\n\n"
+                    
+                    payload = {"query": query}
+                    if user_context:
+                        payload["user_context"] = user_context
+                        
+                    response = requests.post(f"{API_URL}/coach", json=payload)
                     answer = response.json()["response"]
                     st.session_state.chat_history.append({"role": "user", "content": query})
                     st.session_state.chat_history.append({"role": "coach", "content": answer})
@@ -205,6 +216,7 @@ with tab2:
                 }
                 response = requests.post(f"{API_URL}/diet-plan", json=payload)
                 data = response.json()
+                st.session_state.diet_plan = data
 
                 st.markdown("### YOUR STATS")
                 c1, c2, c3, c4, c5 = st.columns(5)
@@ -259,6 +271,7 @@ with tab3:
                 }
                 response = requests.post(f"{API_URL}/training-program", json=payload)
                 data = response.json()
+                st.session_state.training_program = data
 
                 program = data["program"]
                 volume = data["volume_settings"]

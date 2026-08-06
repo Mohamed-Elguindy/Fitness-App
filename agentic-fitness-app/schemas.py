@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 class CoachRequest(BaseModel):
     query: str
+    user_context: str = None
 
 class DietPlanRequest(BaseModel):
     weight_kg: float
