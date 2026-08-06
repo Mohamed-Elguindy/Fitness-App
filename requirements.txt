@@ -13,3 +13,4 @@ rank-bm25
 groq
 llama-index-llms-groq
 python-dotenv
+pydantic-settings

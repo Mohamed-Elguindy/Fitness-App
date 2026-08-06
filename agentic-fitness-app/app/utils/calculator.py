@@ -86,4 +86,3 @@ def calculate_training_volume(available_minutes: int, goal: str) -> dict:
         "rep_range": rep_range,
         "rest_between_sets_seconds": rest_seconds
     }
-
