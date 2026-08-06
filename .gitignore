@@ -12,6 +12,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+__pycache__
 
 # VS Code
 .vscode/
@@ -45,3 +46,5 @@ FA\ docs/
 
 # Data and Papers
 storage/
+agentic-fitness-app/__pycache__/ai_core.cpython-312.pyc
+/agentic-fitness-app/__pycache__
