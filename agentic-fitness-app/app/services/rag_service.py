@@ -29,7 +29,7 @@ class RAGService:
     def __init__(self):
         # We use llama_index's Groq wrapper here instead of the raw client
         Settings.llm = Groq(model="llama-3.3-70b-versatile", api_key=settings.GROQ_API_KEY)
-        Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
+        Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5", device="cpu")
         
         # Paths
         self.app_root = Path(__file__).resolve().parent.parent.parent
