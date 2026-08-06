@@ -8,3 +8,8 @@ scikit-learn
 numpy
 fastapi
 uvicorn
+llama-index-retrievers-bm25
+rank-bm25
+groq
+llama-index-llms-groq
+python-dotenv

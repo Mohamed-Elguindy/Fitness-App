@@ -10,6 +10,9 @@ from llama_index.core import (
 )
 from llama_index.core.schema import TextNode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.retrievers.bm25 import BM25Retriever
+from llama_index.core.retrievers import QueryFusionRetriever
+from llama_index.core.llms import MockLLM
 
 # Define paths
 APP_ROOT = Path(__file__).resolve().parent
@@ -85,3 +88,44 @@ def get_index(domain: str) -> VectorStoreIndex:
     index.storage_context.persist(persist_dir=str(domain_storage_path))
     
     return index
+
+def get_hybrid_retriever(domain: str, similarity_top_k: int = 3) -> QueryFusionRetriever:
+    """
+    Creates a Hybrid Retriever combining Dense Embeddings (Semantic) and BM25 (Keyword).
+    Uses Reciprocal Rank Fusion (RRF) with a 60/40 weight split.
+    """
+    # 1. Get the standard vector index (Semantic)
+    index = get_index(domain)
+    nodes = list(index.docstore.docs.values())
+    actual_k = min(similarity_top_k, len(nodes)) if nodes else 1
+    
+    vector_retriever = index.as_retriever(similarity_top_k=actual_k)
+    
+    # 2. Setup the BM25 index (Keyword)
+    domain_bm25_path = STORAGE_DIR / f"{domain}_bm25"
+    
+    if domain_bm25_path.exists() and any(domain_bm25_path.iterdir()):
+        print(f"Loading {domain} BM25 index from storage...")
+        bm25_retriever = BM25Retriever.from_persist_dir(str(domain_bm25_path))
+    else:
+        print(f"Building {domain} BM25 index from nodes...")
+        bm25_retriever = BM25Retriever.from_defaults(nodes=nodes)
+        
+        print(f"Persisting {domain} BM25 index to storage...")
+        os.makedirs(domain_bm25_path, exist_ok=True)
+        bm25_retriever.persist(str(domain_bm25_path))
+        
+    bm25_retriever.similarity_top_k = actual_k
+    
+    # 3. Fuse them together using RRF
+    hybrid_retriever = QueryFusionRetriever(
+        [vector_retriever, bm25_retriever],
+        similarity_top_k=actual_k,
+        num_queries=1,  # We just want to merge, not generate new queries
+        mode="reciprocal_rerank",
+        use_async=False,
+        retriever_weights=[0.6, 0.4],  # 60% Semantic, 40% Keyword
+        llm=MockLLM()
+    )
+    
+    return hybrid_retriever
