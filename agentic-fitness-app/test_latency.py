@@ -1,9 +1,12 @@
 import time
-from ai_core import ask_coach
+from app.services.rag_service import RAGService
+from app.core.config import settings
+
+rag_service = RAGService()
 
 start = time.time()
 print("Starting query...")
-res = ask_coach("What is the best way to bulk up?")
+res = rag_service.ask_coach("What is the best way to bulk up?")
 end = time.time()
 
 print(f"Time taken: {end - start:.2f} seconds")

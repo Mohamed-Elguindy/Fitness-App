@@ -28,4 +28,4 @@ jobs:
       - name: Run RAG Golden Queries Test
         working-directory: ./agentic-fitness-app
         run: |
-          python -m pytest tests/test_rag.py -v
+          PYTHONPATH="." python -m pytest tests/test_rag.py -v
