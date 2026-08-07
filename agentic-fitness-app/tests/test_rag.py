@@ -1,9 +1,13 @@
 import pytest
-from knowledge_base import get_index
+from app.services.rag_service import RAGService
 
-def test_nutrition_index_retrieval():
-    """Test that the persisted nutrition index retrieves high-quality context."""
-    index = get_index("nutrition")
+@pytest.fixture(scope="module")
+def rag_service():
+    return RAGService()
+
+def test_fitness_and_diet_index_retrieval(rag_service):
+    """Test that the persisted fitness_and_diet index retrieves high-quality context."""
+    index = rag_service._get_index("fitness_and_diet")
     retriever = index.as_retriever(similarity_top_k=3)
     
     # Test query
@@ -20,11 +24,11 @@ def test_nutrition_index_retrieval():
     text = nodes[0].text.lower()
     assert "creatine" in text, "Top chunk is missing the subject keyword."
 
-def test_training_index_retrieval():
-    """Test that the persisted training index retrieves high-quality context."""
-    index = get_index("training")
+def test_mentality_index_retrieval(rag_service):
+    """Test that the persisted mentality index retrieves high-quality context."""
+    index = rag_service._get_index("mentality")
     retriever = index.as_retriever(similarity_top_k=3)
     
-    nodes = retriever.retrieve("hypertrophy rest periods")
-    assert len(nodes) > 0, "No chunks were retrieved for training!"
-    assert nodes[0].score > 0.70, "Top retrieval score is below baseline for training!"
+    nodes = retriever.retrieve("motivation and discipline")
+    assert len(nodes) > 0, "No chunks were retrieved for mentality!"
+    assert nodes[0].score > 0.70, "Top retrieval score is below baseline for mentality!"
