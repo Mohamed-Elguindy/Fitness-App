@@ -35,12 +35,12 @@ jobs:
       - name: Run Chunking Experiment
         working-directory: ./agentic-fitness-app
         run: |
-          python experiments/chunking_experiment.py
+          PYTHONPATH="." python experiments/chunking_experiment.py
           
       - name: Build Vector Indices
         working-directory: ./agentic-fitness-app
         run: |
-          python test_indices.py
+          PYTHONPATH="." python test_indices.py
           
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5

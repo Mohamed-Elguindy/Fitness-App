@@ -1,7 +1,8 @@
-from knowledge_base import get_index
+from app.services.rag_service import RAGService
 from llama_index.retrievers.bm25 import BM25Retriever
 
-index = get_index("nutrition")
+rag_service = RAGService()
+index = rag_service._get_index("fitness_and_diet")
 nodes = list(index.docstore.docs.values())
 print(f"Got {len(nodes)} nodes from docstore.")
 
