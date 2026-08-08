@@ -5,6 +5,7 @@ from app.services.rag_service import RAGService
 from app.services.diet_service import DietService
 from app.services.program_service import ProgramService
 from app.services.exercise_service import ExerciseService
+from app.services.meal_service import MealService
 
 @lru_cache
 def get_llm_client() -> Groq:
@@ -30,3 +31,8 @@ def get_program_service() -> ProgramService:
 def get_exercise_service() -> ExerciseService:
     """Provides a singleton ExerciseService instance."""
     return ExerciseService()
+
+@lru_cache
+def get_meal_service() -> MealService:
+    """Provides a singleton MealService instance."""
+    return MealService()

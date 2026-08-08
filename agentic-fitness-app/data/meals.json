@@ -1,0 +1,265 @@
+{
+  "breakfasts": [
+    {
+      "name": "Classic Oats & Eggs",
+      "base_calories": 500,
+      "macros": {"protein": 30, "carbs": 55, "fat": 15},
+      "ingredients": [
+        {"item": "Oats", "amount_g": 60},
+        {"item": "Whole Eggs", "amount_g": 100},
+        {"item": "Egg Whites", "amount_g": 100}
+      ],
+      "budget_level": "moderate",
+      "cuisine": "standard"
+    },
+    {
+      "name": "Ful Medames & Boiled Eggs",
+      "base_calories": 480,
+      "macros": {"protein": 28, "carbs": 60, "fat": 14},
+      "ingredients": [
+        {"item": "Ful Medames (Fava Beans)", "amount_g": 200},
+        {"item": "Olive Oil", "amount_g": 5},
+        {"item": "Boiled Eggs", "amount_g": 100},
+        {"item": "Baladi Bread", "amount_g": 50}
+      ],
+      "budget_level": "low",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Areesh Cheese & Tomatoes",
+      "base_calories": 450,
+      "macros": {"protein": 35, "carbs": 55, "fat": 10},
+      "ingredients": [
+        {"item": "Gebna Areesh (Cottage Cheese)", "amount_g": 200},
+        {"item": "Tomatoes & Cucumber", "amount_g": 150},
+        {"item": "Olive Oil", "amount_g": 5},
+        {"item": "Baladi Bread", "amount_g": 100}
+      ],
+      "budget_level": "low",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Shakshuka",
+      "base_calories": 400,
+      "macros": {"protein": 24, "carbs": 35, "fat": 18},
+      "ingredients": [
+        {"item": "Whole Eggs", "amount_g": 150},
+        {"item": "Tomato Sauce & Peppers", "amount_g": 150},
+        {"item": "Baladi Bread", "amount_g": 50}
+      ],
+      "budget_level": "low",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Taameya (Baked Falafel) & Salad",
+      "base_calories": 450,
+      "macros": {"protein": 18, "carbs": 60, "fat": 15},
+      "ingredients": [
+        {"item": "Baked Taameya", "amount_g": 150},
+        {"item": "Salad (Cucumber/Tomato)", "amount_g": 100},
+        {"item": "Baladi Bread", "amount_g": 50}
+      ],
+      "budget_level": "low",
+      "cuisine": "egyptian"
+    }
+  ],
+  "dinners": [
+    {
+      "name": "Ful Medames & Boiled Eggs",
+      "base_calories": 480,
+      "macros": {"protein": 28, "carbs": 60, "fat": 14},
+      "ingredients": [
+        {"item": "Ful Medames (Fava Beans)", "amount_g": 200},
+        {"item": "Olive Oil", "amount_g": 5},
+        {"item": "Boiled Eggs", "amount_g": 100},
+        {"item": "Baladi Bread", "amount_g": 50}
+      ],
+      "budget_level": "low",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Areesh Cheese & Tomatoes",
+      "base_calories": 450,
+      "macros": {"protein": 35, "carbs": 55, "fat": 10},
+      "ingredients": [
+        {"item": "Gebna Areesh (Cottage Cheese)", "amount_g": 200},
+        {"item": "Tomatoes & Cucumber", "amount_g": 150},
+        {"item": "Olive Oil", "amount_g": 5},
+        {"item": "Baladi Bread", "amount_g": 100}
+      ],
+      "budget_level": "low",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Tuna Salad & Baladi Bread",
+      "base_calories": 400,
+      "macros": {"protein": 35, "carbs": 40, "fat": 10},
+      "ingredients": [
+        {"item": "Canned Tuna (in water)", "amount_g": 150},
+        {"item": "Mixed Salad", "amount_g": 150},
+        {"item": "Baladi Bread", "amount_g": 50}
+      ],
+      "budget_level": "low",
+      "cuisine": "standard"
+    },
+    {
+      "name": "Greek Yogurt & Honey",
+      "base_calories": 300,
+      "macros": {"protein": 20, "carbs": 45, "fat": 5},
+      "ingredients": [
+        {"item": "Fat-Free Greek Yogurt", "amount_g": 200},
+        {"item": "Honey", "amount_g": 20},
+        {"item": "Oats", "amount_g": 30}
+      ],
+      "budget_level": "moderate",
+      "cuisine": "standard"
+    }
+  ],
+  "lunches": [
+    {
+      "name": "Chicken Breast & White Rice",
+      "base_calories": 600,
+      "macros": {"protein": 55, "carbs": 70, "fat": 10},
+      "ingredients": [
+        {"item": "Chicken Breast (Cooked)", "amount_g": 180},
+        {"item": "White Rice (Cooked)", "amount_g": 250},
+        {"item": "Olive Oil", "amount_g": 5}
+      ],
+      "budget_level": "moderate",
+      "cuisine": "standard"
+    },
+    {
+      "name": "Grilled Chicken Kofta & Rice",
+      "base_calories": 650,
+      "macros": {"protein": 50, "carbs": 65, "fat": 20},
+      "ingredients": [
+        {"item": "Minced Chicken Kofta", "amount_g": 200},
+        {"item": "White Rice (Cooked)", "amount_g": 200},
+        {"item": "Tahini", "amount_g": 10}
+      ],
+      "budget_level": "moderate",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Chicken Shawarma Bowl",
+      "base_calories": 700,
+      "macros": {"protein": 45, "carbs": 75, "fat": 25},
+      "ingredients": [
+        {"item": "Chicken Thighs (Shawarma Spices)", "amount_g": 150},
+        {"item": "Yellow Rice (Cooked)", "amount_g": 250},
+        {"item": "Garlic Sauce (Toum)", "amount_g": 15}
+      ],
+      "budget_level": "high",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Molokhia with Chicken & Rice",
+      "base_calories": 550,
+      "macros": {"protein": 45, "carbs": 60, "fat": 12},
+      "ingredients": [
+        {"item": "Chicken Breast (Boiled/Roasted)", "amount_g": 150},
+        {"item": "Molokhia Soup", "amount_g": 200},
+        {"item": "White Rice (Cooked)", "amount_g": 200}
+      ],
+      "budget_level": "low",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Alexandrian Kebda (Liver) & Macaroni",
+      "base_calories": 600,
+      "macros": {"protein": 45, "carbs": 65, "fat": 15},
+      "ingredients": [
+        {"item": "Beef Liver (Kebda)", "amount_g": 150},
+        {"item": "Macaroni Pasta", "amount_g": 200},
+        {"item": "Bell Peppers & Garlic", "amount_g": 50}
+      ],
+      "budget_level": "low",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Tuna & Macaroni",
+      "base_calories": 550,
+      "macros": {"protein": 40, "carbs": 75, "fat": 8},
+      "ingredients": [
+        {"item": "Canned Tuna (in water)", "amount_g": 150},
+        {"item": "Macaroni Pasta (Cooked)", "amount_g": 250},
+        {"item": "Tomato Sauce", "amount_g": 50}
+      ],
+      "budget_level": "low",
+      "cuisine": "standard"
+    }
+  ],
+  "pre_workout": [
+    {
+      "name": "Rice Cream & Whey",
+      "base_calories": 400,
+      "macros": {"protein": 30, "carbs": 65, "fat": 2},
+      "ingredients": [
+        {"item": "Cream of Rice", "amount_g": 60},
+        {"item": "Whey Protein", "amount_g": 30},
+        {"item": "Banana", "amount_g": 100}
+      ],
+      "budget_level": "moderate",
+      "cuisine": "standard"
+    },
+    {
+      "name": "Dates & Greek Yogurt",
+      "base_calories": 350,
+      "macros": {"protein": 20, "carbs": 65, "fat": 0},
+      "ingredients": [
+        {"item": "Dates", "amount_g": 60},
+        {"item": "Fat-Free Greek Yogurt", "amount_g": 200}
+      ],
+      "budget_level": "moderate",
+      "cuisine": "egyptian"
+    }
+  ],
+  "post_workout": [
+    {
+      "name": "Whey Protein & Banana",
+      "base_calories": 300,
+      "macros": {"protein": 30, "carbs": 40, "fat": 2},
+      "ingredients": [
+        {"item": "Whey Protein", "amount_g": 40},
+        {"item": "Banana", "amount_g": 150}
+      ],
+      "budget_level": "moderate",
+      "cuisine": "standard"
+    }
+  ],
+  "before_bed": [
+    {
+      "name": "Greek Yogurt & Walnuts",
+      "base_calories": 300,
+      "macros": {"protein": 25, "carbs": 10, "fat": 15},
+      "ingredients": [
+        {"item": "Greek Yogurt", "amount_g": 250},
+        {"item": "Walnuts", "amount_g": 20}
+      ],
+      "budget_level": "moderate",
+      "cuisine": "standard"
+    },
+    {
+      "name": "Termes (Lupini Beans) & Zabadi",
+      "base_calories": 250,
+      "macros": {"protein": 22, "carbs": 25, "fat": 6},
+      "ingredients": [
+        {"item": "Termes (Lupini Beans)", "amount_g": 100},
+        {"item": "Zabadi (Plain Yogurt)", "amount_g": 150}
+      ],
+      "budget_level": "low",
+      "cuisine": "egyptian"
+    },
+    {
+      "name": "Casein Shake",
+      "base_calories": 150,
+      "macros": {"protein": 25, "carbs": 5, "fat": 2},
+      "ingredients": [
+        {"item": "Casein Protein Powder", "amount_g": 30},
+        {"item": "Almond Milk", "amount_g": 200}
+      ],
+      "budget_level": "high",
+      "cuisine": "standard"
+    }
+  ]
+}
