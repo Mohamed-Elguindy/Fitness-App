@@ -1,0 +1,46 @@
+{
+  "protein_multipliers": {
+    "bulk": 1.6,
+    "cut": 2.2,
+    "maintenance": 1.4
+  },
+  "caloric_modifiers": {
+    "bulk_surplus": {
+      "lean": 250,
+      "moderate": 500,
+      "aggressive": 1000
+    },
+    "cut_deficit": {
+      "lean": 250,
+      "moderate": 500,
+      "aggressive": 1000
+    }
+  },
+  "training_volume": {
+    "strength": {
+      "optimal_sets_per_exercise": 3,
+      "optimal_exercises": 4,
+      "optimal_weekly_sets_per_muscle": 12,
+      "rep_range": "3-6",
+      "rest_seconds": 120
+    },
+    "hypertrophy": {
+      "optimal_sets_per_exercise": 4,
+      "optimal_exercises": 4,
+      "optimal_weekly_sets_per_muscle": 16,
+      "rep_range": "8-12",
+      "rest_seconds": 90
+    }
+  },
+  "supplements": {
+    "creatine_maintenance_g": 5.0,
+    "creatine_loading_g": 20.0
+  },
+  "metadata": {
+    "last_updated": "2023-12-01",
+    "sources": [
+      "Journal of the International Society of Sports Nutrition",
+      "Journal of Human Kinetics"
+    ]
+  }
+}
