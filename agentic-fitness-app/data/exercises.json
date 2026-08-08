@@ -1,0 +1,452 @@
+[
+  {
+    "name": "Barbell Bench Press",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Front Delts"
+    ],
+    "equipment": "Barbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Keep your feet planted firmly on the floor.",
+      "Retract your scapula (pinch shoulder blades together)."
+    ]
+  },
+  {
+    "name": "Dumbbell Bench Press",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Front Delts"
+    ],
+    "equipment": "Dumbbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Press the dumbbells straight up until your arms are fully extended.",
+      "Lower the dumbbells until they are level with your chest."
+    ]
+  },
+  {
+    "name": "Incline Dumbbell Press",
+    "primary_muscle": "Upper Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Front Delts"
+    ],
+    "equipment": "Dumbbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Set the bench to a 30-45 degree angle.",
+      "Keep your elbows tucked at a 45-degree angle to protect your shoulders."
+    ]
+  },
+  {
+    "name": "Machine Converging Chest Press",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Front Delts",
+      "Triceps"
+    ],
+    "equipment": "Machine",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep chest up and proud.",
+      "Drive elbows across the body for maximum pec contraction."
+    ]
+  },
+  {
+    "name": "Deficit Push-Up",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [
+      "Triceps",
+      "Front Delts"
+    ],
+    "equipment": "Bodyweight",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Elevate hands on blocks or dumbbells to increase the stretch at the bottom (science-based).",
+      "Keep core tight and maintain a straight line from head to heels."
+    ]
+  },
+  {
+    "name": "Pec Deck Fly",
+    "primary_muscle": "Chest",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep a slight bend in the elbows.",
+      "Focus on squeezing your biceps together at the center to fully contract the chest."
+    ]
+  },
+  {
+    "name": "Pull-Up",
+    "primary_muscle": "Lats",
+    "secondary_muscles": [
+      "Biceps",
+      "Upper Back"
+    ],
+    "equipment": "Bodyweight",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Start from a dead hang with active shoulders.",
+      "Pull your chest to the bar by driving your elbows down and back."
+    ]
+  },
+  {
+    "name": "Barbell Bent-Over Row",
+    "primary_muscle": "Upper Back",
+    "secondary_muscles": [
+      "Lats",
+      "Biceps"
+    ],
+    "equipment": "Barbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Hinge at the hips until your torso is almost parallel to the floor.",
+      "Pull the bar towards your belly button, squeezing your shoulder blades."
+    ]
+  },
+  {
+    "name": "Single-Arm Dumbbell Row",
+    "primary_muscle": "Lats",
+    "secondary_muscles": [
+      "Biceps",
+      "Upper Back"
+    ],
+    "equipment": "Dumbbell",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep your back flat and parallel to the floor.",
+      "Pull the dumbbell to your hip, not your chest, to target the lats."
+    ]
+  },
+  {
+    "name": "Lat Pulldown (Neutral Grip)",
+    "primary_muscle": "Lats",
+    "secondary_muscles": [
+      "Biceps"
+    ],
+    "equipment": "Cable",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Drive elbows straight down towards your hips.",
+      "Avoid leaning back excessively to keep the tension on the lats."
+    ]
+  },
+  {
+    "name": "Chest-Supported T-Bar Row",
+    "primary_muscle": "Upper Back",
+    "secondary_muscles": [
+      "Lats",
+      "Biceps"
+    ],
+    "equipment": "Machine",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Keep chest glued to the pad to prevent cheating with momentum.",
+      "Squeeze shoulder blades together hard at the top."
+    ]
+  },
+  {
+    "name": "Single-Arm Iliac Cable Pulldown",
+    "primary_muscle": "Lats",
+    "secondary_muscles": [],
+    "equipment": "Cable",
+    "difficulty": "Advanced",
+    "form_cues": [
+      "Align the cable path with your lower lat fibers (iliac division).",
+      "Pull the elbow tight to your side and pause.",
+      "Allow full stretch at the top."
+    ]
+  },
+  {
+    "name": "Barbell Back Squat",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Barbell",
+    "difficulty": "Advanced",
+    "form_cues": [
+      "Break at hips and knees simultaneously.",
+      "Keep chest up and brace core heavily."
+    ]
+  },
+  {
+    "name": "Barbell Front Squat",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [
+      "Core",
+      "Upper Back"
+    ],
+    "equipment": "Barbell",
+    "difficulty": "Advanced",
+    "form_cues": [
+      "Keep your elbows pointed up as high as possible.",
+      "Maintain a very upright torso throughout the movement."
+    ]
+  },
+  {
+    "name": "Pendulum Squat",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Machine",
+    "difficulty": "Advanced",
+    "form_cues": [
+      "Control the eccentric (lowering) phase.",
+      "Maximize knee flexion for maximum quad stretch (science-based hypertrophy)."
+    ]
+  },
+  {
+    "name": "Bulgarian Split Squat",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [
+      "Glutes"
+    ],
+    "equipment": "Dumbbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Keep front foot flat on the ground.",
+      "Allow the front knee to track over the toes for maximum quad bias.",
+      "Drop straight down rather than leaning back."
+    ]
+  },
+  {
+    "name": "Leg Extension",
+    "primary_muscle": "Quadriceps",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Pull yourself tightly into the seat using the handles.",
+      "Control the weight down, maximizing tension in the lengthened position."
+    ]
+  },
+  {
+    "name": "Romanian Deadlift (RDL)",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [
+      "Glutes",
+      "Lower Back"
+    ],
+    "equipment": "Barbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Push hips back until you feel a deep stretch in the hamstrings.",
+      "Keep the bar glued to your legs the entire time."
+    ]
+  },
+  {
+    "name": "Seated Leg Curl",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Lean forward slightly to increase the stretch on the hamstrings (science-based).",
+      "Control the eccentric phase on the way up."
+    ]
+  },
+  {
+    "name": "Barbell Overhead Press",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [
+      "Triceps",
+      "Core"
+    ],
+    "equipment": "Barbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Brace core and squeeze glutes to protect lower back.",
+      "Press the bar straight up, pushing your head through the 'window' at the top."
+    ]
+  },
+  {
+    "name": "Seated Dumbbell Shoulder Press",
+    "primary_muscle": "Shoulders",
+    "secondary_muscles": [
+      "Triceps"
+    ],
+    "equipment": "Dumbbell",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep your back pressed flat against the pad.",
+      "Lower the dumbbells until they touch your shoulders, then press up."
+    ]
+  },
+  {
+    "name": "Dumbbell Lateral Raise",
+    "primary_muscle": "Side Delts",
+    "secondary_muscles": [],
+    "equipment": "Dumbbell",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Maintain a slight bend in your elbows.",
+      "Raise your arms out to the side until they are parallel to the floor."
+    ]
+  },
+  {
+    "name": "Cross-Body Cable Lateral Raise",
+    "primary_muscle": "Side Delts",
+    "secondary_muscles": [],
+    "equipment": "Cable",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Set cable at wrist-height to create a constant tension profile (science-based).",
+      "Lead with the elbows and drag the cable across your body."
+    ]
+  },
+  {
+    "name": "Reverse Pec Deck",
+    "primary_muscle": "Rear Delts",
+    "secondary_muscles": [
+      "Upper Back"
+    ],
+    "equipment": "Machine",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep arms slightly bent but locked in position.",
+      "Pull out to the sides rather than just backward to isolate the rear delts."
+    ]
+  },
+  {
+    "name": "Barbell Bicep Curl",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "equipment": "Barbell",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep your elbows pinned to your sides.",
+      "Avoid swinging your torso to lift the weight."
+    ]
+  },
+  {
+    "name": "Incline Dumbbell Curl",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "equipment": "Dumbbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Set bench to 60 degrees.",
+      "Let arms hang straight down to heavily stretch the long head of the bicep."
+    ]
+  },
+  {
+    "name": "Bayesian Cable Curl",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "equipment": "Cable",
+    "difficulty": "Advanced",
+    "form_cues": [
+      "Face away from the cable machine.",
+      "Keep your elbow behind your torso to maximize stretch (science-based)."
+    ]
+  },
+  {
+    "name": "EZ Bar Skullcrusher",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "equipment": "Barbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Lie flat on a bench and lower the bar towards your forehead.",
+      "Keep your elbows pointing up and stationary."
+    ]
+  },
+  {
+    "name": "Cross-Body Cable Tricep Extension (Katana Extension)",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "equipment": "Cable",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Cross the cables in front of you.",
+      "Keep elbows fixed and extend outward. This aligns perfectly with the tricep fiber direction."
+    ]
+  },
+  {
+    "name": "Overhead Tricep Extension",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "equipment": "Cable",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Use a rope or D-handle attachment.",
+      "Keep elbows pointing up to maximally stretch the long head of the tricep."
+    ]
+  },
+  {
+    "name": "Standing Calf Raise",
+    "primary_muscle": "Calves",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep your knees straight but not fully locked out.",
+      "Lower your heels until you feel a deep stretch, then press up onto your toes."
+    ]
+  },
+  {
+    "name": "Seated Calf Raise",
+    "primary_muscle": "Calves",
+    "secondary_muscles": [],
+    "equipment": "Machine",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "This isolates the soleus muscle underneath the gastrocnemius.",
+      "Focus on the deep stretch at the bottom of the movement."
+    ]
+  },
+  {
+    "name": "Seated Cable Row (V-Bar)",
+    "primary_muscle": "Upper Back",
+    "secondary_muscles": [
+      "Lats",
+      "Biceps"
+    ],
+    "equipment": "Cable",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep your torso relatively upright.",
+      "Pull the V-bar to your belly button and squeeze your shoulder blades together."
+    ]
+  },
+  {
+    "name": "Cable Tricep Pushdown",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "equipment": "Cable",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep your elbows pinned to your sides.",
+      "Press the bar or rope down until your arms are fully locked out."
+    ]
+  },
+  {
+    "name": "Standard Cable Bicep Curl",
+    "primary_muscle": "Biceps",
+    "secondary_muscles": [],
+    "equipment": "Cable",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Keep your elbows pinned to your sides.",
+      "Use the cable tension for a smooth contraction at the top."
+    ]
+  },
+  {
+    "name": "Standard Cable Lateral Raise",
+    "primary_muscle": "Side Delts",
+    "secondary_muscles": [],
+    "equipment": "Cable",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Stand next to the cable tower and pull the cable across your body.",
+      "Lead with your elbows to isolate the side deltoid."
+    ]
+  }
+]

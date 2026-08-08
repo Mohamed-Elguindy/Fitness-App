@@ -27,5 +27,7 @@ jobs:
           
       - name: Run RAG Golden Queries Test
         working-directory: ./agentic-fitness-app
+        env:
+          GROQ_API_KEY: "dummy_key_for_testing"
         run: |
           PYTHONPATH="." python -m pytest tests/test_rag.py -v
