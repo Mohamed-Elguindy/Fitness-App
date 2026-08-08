@@ -1,6 +1,5 @@
 import json
 from groq import Groq
-from app.utils.calculator import calculate_tdee, calculate_macros
 from app.models.schemas import DietPlanRequest
 
 class DietService:
@@ -156,8 +155,21 @@ JSON format:
         return meal_plan
 
     def build_diet_plan(self, request: DietPlanRequest) -> dict:
-        tdee = calculate_tdee(request.weight_kg, request.height_cm, request.age, request.gender, request.activity_level)
-        macros = calculate_macros(tdee, request.goal, request.weight_kg, request.intensity)
+        from app.utils.calculator import CalculatorService, ActivityLevel, Goal
+        
+        calc = CalculatorService()
+        try:
+            activity = ActivityLevel(request.activity_level.lower())
+        except ValueError:
+            activity = ActivityLevel.MODERATE
+            
+        try:
+            goal_enum = Goal(request.goal.lower())
+        except ValueError:
+            goal_enum = Goal.MAINTENANCE
+
+        tdee = calc.calculate_tdee(request.weight_kg, request.height_cm, request.age, request.gender, activity)
+        macros = calc.calculate_macros(tdee, request.weight_kg, goal_enum, intensity=request.intensity)
         prompt = self._build_prompt(macros, request)
         
         meal_plan = None
