@@ -121,7 +121,7 @@ class RAGService:
         
         hybrid_retriever = QueryFusionRetriever(
             [vector_retriever, bm25_retriever],
-            similarity_top_k=actual_k,
+            similarity_top_k=actual_k * 3,  # Increase initial catch for reranker
             num_queries=1,
             mode="reciprocal_rerank",
             use_async=False,
@@ -132,13 +132,31 @@ class RAGService:
         return hybrid_retriever
 
     def _build_router(self) -> RouterQueryEngine:
+        from llama_index.core.postprocessor import SentenceTransformerRerank
+        
         fitness_retriever = self._get_hybrid_retriever("fitness_and_diet")
         mentality_retriever = self._get_hybrid_retriever("mentality")
         general_retriever = self._get_hybrid_retriever("general")
+        
+        # Initialize the cross-encoder reranker
+        reranker = SentenceTransformerRerank(
+            model="cross-encoder/ms-marco-MiniLM-L-2-v2",
+            top_n=3,
+            device="cpu"
+        )
 
-        fitness_qe = RetrieverQueryEngine.from_args(fitness_retriever)
-        mentality_qe = RetrieverQueryEngine.from_args(mentality_retriever)
-        general_qe = RetrieverQueryEngine.from_args(general_retriever)
+        fitness_qe = RetrieverQueryEngine.from_args(
+            fitness_retriever,
+            node_postprocessors=[reranker]
+        )
+        mentality_qe = RetrieverQueryEngine.from_args(
+            mentality_retriever,
+            node_postprocessors=[reranker]
+        )
+        general_qe = RetrieverQueryEngine.from_args(
+            general_retriever,
+            node_postprocessors=[reranker]
+        )
 
         fitness_tool = QueryEngineTool.from_defaults(
             query_engine=fitness_qe,
