@@ -52,7 +52,13 @@ class ExerciseService:
             ]
             
         if equipment:
-            results = [ex for ex in results if ex.get("equipment", "").lower() == equipment.lower()]
+            eq = equipment.lower()
+            if eq == "home":
+                results = [ex for ex in results if ex.get("equipment", "").lower() in ["dumbbell", "bodyweight"]]
+            elif eq == "gym":
+                pass
+            else:
+                results = [ex for ex in results if ex.get("equipment", "").lower() == eq]
             
         if difficulty:
             results = [ex for ex in results if ex.get("difficulty", "").lower() == difficulty.lower()]

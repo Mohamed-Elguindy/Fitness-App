@@ -21,14 +21,14 @@ from llama_index.core.llms import MockLLM
 from llama_index.core.tools import QueryEngineTool
 from llama_index.core.query_engine import RouterQueryEngine, RetrieverQueryEngine
 from llama_index.core.selectors import LLMSingleSelector
-from llama_index.llms.groq import Groq
+from llama_index.llms.gemini import Gemini
 
 from app.core.config import settings
 
 class RAGService:
     def __init__(self):
-        # We use llama_index's Groq wrapper here instead of the raw client
-        Settings.llm = Groq(model="llama-3.3-70b-versatile", api_key=settings.GROQ_API_KEY)
+        # We use llama_index's Gemini wrapper here instead of the raw client
+        Settings.llm = Gemini(model="models/gemini-3.6-flash", api_key=settings.GEMINI_API_KEY)
         Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5", device="cpu")
         
         # Paths
@@ -180,3 +180,17 @@ class RAGService:
     def ask_coach(self, prompt: str) -> str:
         response = self.router.query(prompt)
         return str(response)
+
+    def get_diet_context(self, goal: str, dietary_restrictions: str = "none") -> str:
+        query = f"What are the most important sports science rules for meal timing, protein distribution, and nutrient partitioning for a {goal} diet? Special considerations: {dietary_restrictions}."
+        print(f"RAG Diet Query: {query}")
+        retriever = self._get_hybrid_retriever("nutrition", similarity_top_k=2)
+        nodes = retriever.retrieve(query)
+        return "\n\n".join([n.node.text.strip() for n in nodes])
+
+    def get_training_context(self, goal: str, days_per_week: int, equipment: str, injuries: str = "none") -> str:
+        query = f"What are the scientific rules for exercise selection, fatigue management, and volume for a {goal} program that trains {days_per_week} days a week using {equipment} equipment? Special injury considerations: {injuries}."
+        print(f"RAG Training Query: {query}")
+        retriever = self._get_hybrid_retriever("training", similarity_top_k=2)
+        nodes = retriever.retrieve(query)
+        return "\n\n".join([n.node.text.strip() for n in nodes])
