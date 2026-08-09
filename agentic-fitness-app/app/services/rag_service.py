@@ -28,7 +28,11 @@ from app.core.config import settings
 class RAGService:
     def __init__(self):
         # We use llama_index's Gemini wrapper here instead of the raw client
-        Settings.llm = Gemini(model="models/gemini-3.6-flash", api_key=settings.GEMINI_API_KEY)
+        if settings.GEMINI_API_KEY == "dummy_testing_key_for_ci":
+            Settings.llm = MockLLM()
+        else:
+            Settings.llm = Gemini(model="models/gemini-3.6-flash", api_key=settings.GEMINI_API_KEY)
+            
         Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5", device="cpu")
         
         # Paths
