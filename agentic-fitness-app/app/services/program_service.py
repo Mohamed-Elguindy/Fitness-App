@@ -1,129 +1,140 @@
 import json
-from groq import Groq
-from app.utils.calculator import calculate_training_volume
-from app.models.schemas import TrainingProgramRequest
+import instructor
+import google.generativeai as genai
+from app.models.schemas import TrainingProgramRequest, TrainingProgram
+from app.services.exercise_service import ExerciseService
+from app.services.rag_service import RAGService
+from app.utils.calculator import CalculatorService, Goal
 
 class ProgramService:
-    def __init__(self, llm_client: Groq):
-        self.client = llm_client
+    def __init__(self, llm_client: genai.GenerativeModel):
+        self.client = instructor.from_gemini(client=llm_client, mode=instructor.Mode.GEMINI_JSON)
+        self.exercise_service = ExerciseService()
+        self.rag_service = RAGService()
+        self.calc = CalculatorService()
 
-    def _build_program_prompt(self, volume: dict, request: TrainingProgramRequest) -> str:
-        gym_exercises = """
-        CHEST: bench press, incline bench press, machine pec deck, weighted dips
-        BACK: lat pulldown, cable rows, chest supported t-bar row, pull up, deadlift
-        SHOULDERS: overhead press, lateral raise, reverse pec deck, dumbbell shrugs
-        BICEPS: barbell curl, dumbbell curl, bayesian cable curl, preacher curl
-        TRICEPS: tricep pushdown, overhead cable tricep extension, skull crushers
-        LEGS: squat, romanian deadlift, leg extension, seated leg curl, walking lunge, nautilus glute drive, standing calf raise
-        CORE: cable crunch
-        """
-
-        home_exercises = """
-        CHEST: push ups, wide push ups, weighted dips
-        BACK: pull up, bodyweight rows
-        SHOULDERS: pike push ups, lateral raise with water bottles
-        BICEPS: bodyweight curl, hammer curl with water bottles
-        TRICEPS: diamond push ups, bench dips
-        LEGS: squat, walking lunge, romanian deadlift, calf raise
-        CORE: plank, crunches
-        """
-
-        exercises = gym_exercises if request.equipment == "gym" else home_exercises
-        split_structure = {
-            1: ["Full Body"],
-            2: ["Full Body", "Full Body"],
-            3: ["Full Body", "Full Body", "Full Body"],
-            4: ["Upper Body", "Lower Body", "Upper Body", "Lower Body"],
-            5: ["Push", "Pull", "Legs", "Upper Body", "Lower Body"],
-            6: ["Push", "Pull", "Legs", "Push", "Pull", "Legs"],
-            7: ["Push", "Pull", "Legs", "Push", "Pull", "Legs", "Rest"]
-        }
-
-        selected_split = split_structure.get(request.days_per_week, split_structure[3])
-        split_info = "\n".join([f"- Day {i+1}: {day}" for i, day in enumerate(selected_split)])
-
-        return f"""
-You are a professional strength and conditioning coach. Build a detailed weekly training program for this person:
-
-Goal: {request.goal}
-Days per week: {request.days_per_week}
-Available time per session: {request.available_minutes} minutes
-Equipment: {request.equipment}
-Intensity: {volume['intensity']}
-Sets per exercise: {volume['sets_per_exercise']}
-Exercises per session: {volume['exercises_per_session']}
-Rep range: {volume['rep_range']}
-Rest between sets: {volume['rest_between_sets_seconds']} seconds
-
-Available exercises:
-{exercises}
-
-Training split structure — follow this EXACTLY:
-{split_info}
-
-Rules for each split:
-- Full Body: include at least one exercise for chest, back, shoulders, biceps, triceps, legs
-- Upper Body: include chest, back, shoulders, biceps, triceps only
-- Lower Body: include quads, hamstrings, glutes, calves only
-- Push: include chest, shoulders, triceps only
-- Pull: include back, biceps only
-- Legs: include quads, hamstrings, glutes, calves only
-- Rest day: no exercises, just recovery
-
-Rules:
-- Never train the same muscle group on consecutive days
-- Each session must have exactly {volume['exercises_per_session']} exercises
-- Each exercise must have exactly {volume['sets_per_exercise']} sets
-- Rep range for every exercise is {volume['rep_range']}
-- Rest between sets is {volume['rest_between_sets_seconds']} seconds
-- Distribute muscle groups intelligently across {request.days_per_week} days
-- If goal is strength focus on compound movements first
-- If goal is hypertrophy include both compound and isolation movements
-- Respond in JSON format only, no extra text
-
-JSON format:
-{{
-    "program_name": "name of the program",
-    "days_per_week": {request.days_per_week},
-    "goal": "{request.goal}",
-    "sessions": [
-        {{
-            "day": "Day 1",
-            "focus": "muscle groups trained",
-            "exercises": [
-                {{
-                    "exercise": "bench press",
-                    "sets": {volume['sets_per_exercise']},
-                    "reps": "{volume['rep_range']}",
-                    "rest_seconds": {volume['rest_between_sets_seconds']},
-                    "notes": "progression tip"
-                }}
-            ]
-        }}
-    ]
-}}
-"""
-
-    def _call_llm(self, prompt: str) -> dict:
-        response = self.client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": "You are a professional strength and conditioning coach. Always respond in valid JSON only. No extra text, no markdown, no backticks."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.3
-        )
+    def _validate_program(self, program: TrainingProgram, inventory: list, days_per_week: int) -> list[str]:
+        errors = []
+        allowed_exercises = {ex["name"].lower(): ex for ex in inventory}
         
-        raw = response.choices[0].message.content
-        cleaned = raw.strip().replace("```json", "").replace("```", "")
-        return json.loads(cleaned)
+        # 1. Check for exact names and duplicates
+        used_exercises = set()
+        for session in program.sessions:
+            for exercise in session.exercises:
+                ex_name = exercise.exercise_name.lower()
+                if ex_name not in allowed_exercises:
+                    errors.append(f"Exercise '{exercise.exercise_name}' is not in the inventory. You MUST pick EXACT names from the inventory provided.")
+                else:
+                    if ex_name in used_exercises:
+                        errors.append(f"You used '{exercise.exercise_name}' more than once in the program. You must select a unique exercise for every single slot.")
+                    used_exercises.add(ex_name)
+                    
+        # 2. Check Primary Muscle Coverage
+        hit_primary_muscles = set()
+        for session in program.sessions:
+            for exercise in session.exercises:
+                ex_name = exercise.exercise_name.lower()
+                if ex_name in allowed_exercises:
+                    ex_data = allowed_exercises[ex_name]
+                    if "primary_muscle" in ex_data:
+                        hit_primary_muscles.add(ex_data["primary_muscle"].lower())
+                        
+        # Required macro groups must be hit as PRIMARY muscles
+        hit_str = " ".join(hit_primary_muscles)
+        required = ["chest", "back", "quadriceps", "hamstrings", "shoulder", "bicep", "tricep", "calves"]
+        missing = [req for req in required if req not in hit_str and req + "s" not in hit_str]
+        
+        if missing:
+            errors.append(f"Your program forgot to include exercises that target: {', '.join(missing)} AS A PRIMARY MUSCLE. You must include at least one isolation or compound exercise where these are the PRIMARY focus.")
+
+        # 3. Check that the primary muscles targeted align with the session's focus_muscles
+        for session in program.sessions:
+            focus_str = " ".join(session.focus_muscles).lower()
+            for exercise in session.exercises:
+                ex_name = exercise.exercise_name.lower()
+                if ex_name in allowed_exercises:
+                    primary = allowed_exercises[ex_name].get("primary_muscle", "").lower()
+                    if primary and primary not in focus_str and primary[:-1] not in focus_str:
+                         errors.append(f"In session '{session.day_name}', you included '{exercise.exercise_name}' (targets {primary}), but the focus muscles for this day are: {', '.join(session.focus_muscles)}. Please replace it with an exercise that matches the day's focus.")
+
+        return errors
 
     def build_training_program(self, request: TrainingProgramRequest) -> dict:
-        volume = calculate_training_volume(request.available_minutes, request.goal)
-        prompt = self._build_program_prompt(volume, request)
-        program = self._call_llm(prompt)
+        try:
+            goal_enum = Goal(request.goal.lower())
+        except ValueError:
+            goal_enum = Goal.HYPERTROPHY
+
+        volume = self.calc.calculate_training_volume(request.available_minutes, goal_enum)
+        
+        # Pull RAG Context
+        injuries = request.injuries if request.injuries else "none"
+        rag_context = self.rag_service.get_training_context(
+            request.goal, 
+            request.days_per_week, 
+            request.equipment, 
+            injuries
+        )
+        
+        # Build Exercise Inventory
+        inventory = self.exercise_service.get_filtered_exercises(equipment=request.equipment)
+        inventory_str = json.dumps(inventory, indent=2)
+
+        prompt = f"""
+You are an elite, science-based strength and conditioning coach. 
+Your task is to build a {request.days_per_week}-day training program for a {request.goal} goal.
+
+### TARGET VOLUME SETTINGS (Hit these exactly):
+- Sets per exercise: {volume['sets_per_exercise']}
+- Exercises per session: {volume['exercises_per_session']}
+- Rep range: {volume['rep_range']}
+- Rest between sets: {volume['rest_between_sets_seconds']} seconds
+
+### SPORTS SCIENCE CONTEXT (Follow this strictly):
+{rag_context}
+
+### AVAILABLE EXERCISE INVENTORY:
+You MUST ONLY choose exercises from this JSON inventory. You cannot invent new exercises.
+{inventory_str}
+
+Rules:
+1. Every single session MUST have exactly {volume['exercises_per_session']} exercises.
+2. Every single exercise MUST have exactly {volume['sets_per_exercise']} sets.
+3. Every single exercise MUST have the rep range '{volume['rep_range']}'.
+4. Every single exercise MUST have a rest period of {volume['rest_between_sets_seconds']} seconds.
+5. Provide a specific science-backed tip from the RAG context in the notes for each exercise.
+6. MANDATORY MUSCLE COVERAGE: You have exactly {volume['exercises_per_session'] * request.days_per_week} total exercise slots for the entire week. You MUST assign at least 1 exercise to EVERY single major muscle group (Chest, Back, Quads, Hamstrings, Shoulders, Biceps, Triceps, Calves, Core) BEFORE you assign a second exercise to any muscle group. Do not ignore Hamstrings or Calves!
+7. EXACT NAMES ONLY: You MUST use the exact `name` string from the JSON inventory provided. Do not shorten or modify names (e.g., use "Barbell Bench Press", NOT "Bench Press").
+"""
+
+        messages = [
+            {"role": "system", "content": "You are a professional strength and conditioning coach."},
+            {"role": "user", "content": prompt}
+        ]
+
+        max_retries = 3
+        program = None
+
+        for attempt in range(max_retries):
+            program = self.client.chat.completions.create(
+                response_model=TrainingProgram,
+                messages=messages
+            )
+            
+            errors = self._validate_program(program, inventory, request.days_per_week)
+            
+            if not errors:
+                print(f"Program passed strict validation on attempt {attempt + 1}!")
+                break
+            else:
+                print(f"Validation failed on attempt {attempt + 1}. Errors: {errors}")
+                if attempt < max_retries - 1:
+                    messages.append({"role": "assistant", "content": program.model_dump_json()})
+                    messages.append({"role": "user", "content": f"Your generated program failed validation with the following errors:\n" + "\n".join(errors) + "\nPlease correct your mistakes and regenerate the program."})
+                else:
+                    print("Max retries reached. Returning program with warnings.")
 
         return {
             "volume_settings": volume,
-            "program": program
+            "program": program.model_dump()
         }

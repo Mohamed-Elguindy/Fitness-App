@@ -228,20 +228,19 @@ with tab2:
 
                 st.markdown("### YOUR MEAL PLAN")
                 for meal in data["meal_plan"]["meals"]:
-                    st.markdown(f'<div class="day-header">{meal["meal_name"]} — {meal["timing"]}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="day-header">{meal["meal_name"]} — {meal["meal_time"]}</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="meal-card">', unsafe_allow_html=True)
 
                     for food in meal["foods"]:
-                        st.markdown(f"**{food['food'].title()}** — {food['grams']}g | {food['calories']} kcal | P: {food['protein']}g | C: {food['carbs']}g | F: {food['fat']}g")
+                        st.markdown(f"**{food['food_name'].title()}** — {round(food['grams'])}g")
 
-                    totals = meal["meal_totals"]
                     st.markdown(f"---")
-                    st.markdown(f"**Meal Total** — {totals['calories']} kcal | P: {totals['protein']}g | C: {totals['carbs']}g | F: {totals['fat']}g")
+                    st.markdown(f"**Meal Total** — {round(meal['total_calories'])} kcal | P: {round(meal['total_protein'])}g | C: {round(meal['total_carbs'])}g | F: {round(meal['total_fat'])}g")
                     st.markdown('</div>', unsafe_allow_html=True)
 
-                daily = data["meal_plan"]["daily_totals"]
                 st.markdown("### DAILY TOTALS")
-                st.markdown(f'<div class="metric-card">Calories: {daily["calories"]} kcal | Protein: {daily["protein"]}g | Carbs: {daily["carbs"]}g | Fat: {daily["fat"]}g</div>', unsafe_allow_html=True)
+                daily = data["meal_plan"]
+                st.markdown(f'<div class="metric-card">Calories: {round(daily["daily_calories"])} kcal | Protein: {round(daily["daily_protein"])}g | Carbs: {round(daily["daily_carbs"])}g | Fat: {round(daily["daily_fat"])}g</div>', unsafe_allow_html=True)
 
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -285,10 +284,11 @@ with tab3:
                 c4.metric("Rest", f"{volume['rest_between_sets_seconds']}s")
 
                 for session in program["sessions"]:
-                    st.markdown(f'<div class="day-header">{session["day"]} — {session["focus"].upper()}</div>', unsafe_allow_html=True)
+                    focus_str = ", ".join(session["focus_muscles"]).upper()
+                    st.markdown(f'<div class="day-header">{session["day_name"]} — {focus_str}</div>', unsafe_allow_html=True)
 
                     for ex in session["exercises"]:
-                        st.markdown(f'<div class="exercise-card"><strong>{ex["exercise"].upper()}</strong> — {ex["sets"]} sets × {ex["reps"]} reps | Rest: {ex["rest_seconds"]}s<br><small>{ex.get("notes", "")}</small></div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="exercise-card"><strong>{ex["exercise_name"].upper()}</strong> — {ex["sets"]} sets × {ex["reps"]} reps | Rest: {ex["rest_seconds"]}s<br><small>{ex.get("notes", "")}</small></div>', unsafe_allow_html=True)
 
             except Exception as e:
                 st.error(f"Error: {e}")

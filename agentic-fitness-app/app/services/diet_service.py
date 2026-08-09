@@ -1,163 +1,46 @@
 import json
-from groq import Groq
-from app.models.schemas import DietPlanRequest
+import instructor
+import google.generativeai as genai
+from app.models.schemas import DietPlanRequest, DietPlan
+from app.services.meal_service import MealService
+from app.services.rag_service import RAGService
+from app.utils.calculator import CalculatorService, ActivityLevel, Goal
 
 class DietService:
-    def __init__(self, llm_client: Groq):
-        self.client = llm_client
+    def __init__(self, llm_client: genai.GenerativeModel):
+        self.client = instructor.from_gemini(client=llm_client, mode=instructor.Mode.GEMINI_JSON)
+        self.meal_service = MealService()
+        self.rag_service = RAGService()
+        self.calc = CalculatorService()
 
-    def _calculate_meal_distribution(self, daily_calories: float, meals_per_day: int) -> list:
-        distributions = {
-            1: [1.0],
-            2: [0.4, 0.6],
-            3: [0.3, 0.4, 0.3],
-            4: [0.25, 0.30, 0.25, 0.20],
-            5: [0.20, 0.25, 0.20, 0.20, 0.15],
-            6: [0.20, 0.25, 0.15, 0.15, 0.15, 0.10]
+    def _get_base_meal(self, meal_name: str, inventory: dict) -> dict:
+        target_name = meal_name.lower()
+        for category, meals in inventory.items():
+            for meal in meals:
+                if meal["name"].lower() == target_name:
+                    return meal
+        return None
+
+    def _scale_meal(self, base_meal: dict, target_calories: float) -> dict:
+        ratio = target_calories / base_meal["base_calories"]
+        
+        scaled_ingredients = []
+        for ing in base_meal["ingredients"]:
+            scaled_ingredients.append({
+                "food_name": ing["item"],
+                "grams": round(ing["amount_g"] * ratio, 2)
+            })
+            
+        return {
+            "meal_name": base_meal["name"],
+            "foods": scaled_ingredients,
+            "total_calories": round(target_calories, 2),
+            "total_protein": round(base_meal["macros"]["protein"] * ratio, 2),
+            "total_carbs": round(base_meal["macros"]["carbs"] * ratio, 2),
+            "total_fat": round(base_meal["macros"]["fat"] * ratio, 2)
         }
-
-        percentages = distributions.get(meals_per_day, distributions[3])
-        return [round(daily_calories * pct) for pct in percentages]
-
-    def _build_prompt(self, macros: dict, request: DietPlanRequest) -> str:
-        budget_foods = {
-            "low": {
-                "proteins": "eggs, tuna, cottage cheese",
-                "carbs": "oats, white rice, banana, whole wheat bread",
-                "fats": "peanut butter, olive oil"
-            },
-            "moderate": {
-                "proteins": "eggs, tuna, chicken breast, greek yogurt, cottage cheese, whey protein",
-                "carbs": "oats, white rice, sweet potato, banana, whole wheat bread, pasta",
-                "fats": "peanut butter, olive oil, almonds"
-            },
-            "high": {
-                "proteins": "eggs, tuna, chicken breast, ground beef 90% lean, greek yogurt, cottage cheese, whey protein",
-                "carbs": "oats, white rice, sweet potato, banana, whole wheat bread, pasta, white bread",
-                "fats": "peanut butter, olive oil, almonds, avocado, dark chocolate 70%"
-            }
-        }
-
-        selected_foods = budget_foods.get(request.budget.lower(), budget_foods["moderate"])
-        meal_calories = self._calculate_meal_distribution(macros["daily_calories"], request.meals_per_day)
-        meal_targets = "\n".join([f"- Meal {i+1}: exactly {cal} calories" for i, cal in enumerate(meal_calories)])
-
-        return f"""
-You are a professional sports nutritionist. Build a detailed meal plan for this person:
-
-Goal: {request.goal}
-Intensity: {request.intensity}
-Number of meals: {request.meals_per_day}
-Budget level: {request.budget}
-
-Daily targets to hit exactly:
-- Calories: {macros['daily_calories']} kcal
-- Protein: {macros['protein_g']}g
-- Carbs: {macros['carbs_g']}g
-- Fat: {macros['fat_g']}g
-
-Each meal MUST hit these exact calorie targets:
-{meal_targets}
-
-Only use these foods based on the budget level:
-Proteins: {selected_foods['proteins']}
-Carbs: {selected_foods['carbs']}
-Fats: {selected_foods['fats']}
-
-Food combination rules — this is MANDATORY, never break these rules:
-- NEVER mix fish (tuna) with any dairy (greek yogurt, cottage cheese, whey protein) in the same meal
-- NEVER put whey protein shake in the same meal as eggs
-- NEVER put whey protein shake in the same meal as bread
-- whey protein shake ONLY pairs with banana alone or oats alone, nothing else
-- Greek yogurt ONLY appears in breakfast, never in any other meal
-- Cottage cheese ONLY appears in the before bed meal, never anywhere else
-- Dark chocolate ONLY appears as the before bed snack, never in any other meal
-- Pasta and rice NEVER appear in the same meal
-- Olive oil ONLY pairs with chicken, beef, or fish, never with oats or whey
-- Tuna ONLY pairs with rice or sweet potato, nothing else
-- Eggs ONLY pair with oats, never with bread or whey
-- Peanut butter ONLY pairs with oats or cottage cheese, never with bread
-- Before bed meal MUST be moderate carbs — cottage cheese with bread or greek yogurt with oats or banana.
-
-Meal timing rules:
-- Pre workout meal must be high carb — use rice, pasta, or oats
-- Post workout meal must be high protein and moderate carb — use whey protein, banana, bread
-- Before bed meal must be high protein zero carb — cottage cheese and peanut butter only
-- Breakfast must be balanced — use eggs or oats as base
-
-Rules:
-- Each meal must show exact grams of each food
-- Each meal must show its calories, protein, carbs, fat
-- All meals combined must add up exactly to the daily targets
-- Respond in JSON format only, no extra text
-
-JSON format:
-{{
-    "meals": [
-        {{
-            "meal_name": "Breakfast",
-            "timing": "8:00 AM",
-            "foods": [
-                {{"food": "oats", "grams": 100, "calories": 380, "protein": 13, "carbs": 66, "fat": 7}}
-            ],
-            "meal_totals": {{"calories": 380, "protein": 13, "carbs": 66, "fat": 7}}
-        }}
-    ],
-    "daily_totals": {{"calories": 0, "protein": 0, "carbs": 0, "fat": 0}}
-}}
-"""
-
-    def _call_llm(self, prompt: str) -> dict:
-        response = self.client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": "You are a professional sports nutritionist. Always respond in valid JSON only. No extra text, no markdown, no backticks."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.3
-        )
-        
-        raw = response.choices[0].message.content
-        cleaned = raw.strip().replace("```json", "").replace("```", "")
-        return json.loads(cleaned)
-
-    def _check_rules(self, meal_plan: dict) -> bool:
-        for meal in meal_plan["meals"]:
-            foods = [f["food"].lower() for f in meal["foods"]]
-            meal_name = meal["meal_name"].lower()
-
-            if "tuna" in foods and any(f in foods for f in ["greek yogurt", "cottage cheese", "whey protein"]):
-                print(f"Rule broken: tuna mixed with dairy in {meal_name}")
-                return False
-
-            if "chicken breast" in foods and "tuna" in foods:
-                print(f"Rule broken: two proteins in same meal in {meal_name}")
-                return False
-
-            if "whey protein" in foods and "eggs" in foods:
-                print(f"Rule broken: whey with eggs in {meal_name}")
-                return False
-
-        return True
-
-    def _validate_meal_plan(self, meal_plan: dict, target_calories: float) -> dict:
-        total_calories = meal_plan["daily_totals"]["calories"]
-        difference = abs(total_calories - target_calories)
-        
-        if difference > 100:
-            print(f"Calories off by {difference} — retrying...")
-            return None
-        
-        if not self._check_rules(meal_plan):
-            print("Rules broken — retrying...")
-            return None
-        
-        return meal_plan
 
     def build_diet_plan(self, request: DietPlanRequest) -> dict:
-        from app.utils.calculator import CalculatorService, ActivityLevel, Goal
-        
-        calc = CalculatorService()
         try:
             activity = ActivityLevel(request.activity_level.lower())
         except ValueError:
@@ -168,20 +51,72 @@ JSON format:
         except ValueError:
             goal_enum = Goal.MAINTENANCE
 
-        tdee = calc.calculate_tdee(request.weight_kg, request.height_cm, request.age, request.gender, activity)
-        macros = calc.calculate_macros(tdee, request.weight_kg, goal_enum, intensity=request.intensity)
-        prompt = self._build_prompt(macros, request)
+        tdee = self.calc.calculate_tdee(request.weight_kg, request.height_cm, request.age, request.gender, activity)
+        macros = self.calc.calculate_macros(tdee, request.weight_kg, goal_enum, intensity=request.intensity)
         
-        meal_plan = None
-        attempts = 0
+        # Pull RAG Context
+        rag_context = self.rag_service.get_diet_context(request.goal, dietary_restrictions="none")
         
-        while meal_plan is None and attempts < 3:
-            raw_plan = self._call_llm(prompt)
-            meal_plan = self._validate_meal_plan(raw_plan, macros["daily_calories"])
-            attempts += 1
+        # Build Food Inventory
+        inventory = {
+            "breakfasts": self.meal_service.filter_meals("breakfasts", request.budget),
+            "lunches": self.meal_service.filter_meals("lunches", request.budget),
+            "dinners": self.meal_service.filter_meals("dinners", request.budget),
+            "pre_workout": self.meal_service.filter_meals("pre_workout", request.budget),
+            "post_workout": self.meal_service.filter_meals("post_workout", request.budget),
+            "before_bed": self.meal_service.filter_meals("before_bed", request.budget)
+        }
+        
+        inventory_str = json.dumps(inventory, indent=2)
+
+        prompt = f"""
+You are an elite, science-based sports nutritionist. 
+Your task is to build a {request.meals_per_day}-meal diet plan that EXACTLY hits these daily targets:
+- Calories: {macros['daily_calories']} kcal
+- Protein: {macros['protein_g']}g
+- Carbs: {macros['carbs_g']}g
+- Fat: {macros['fat_g']}g
+
+### SPORTS SCIENCE CONTEXT (Follow this strictly):
+{rag_context}
+
+### AVAILABLE MEAL INVENTORY:
+You MUST ONLY choose meals from this JSON inventory.
+{inventory_str}
+
+Rules:
+1. Choose exactly {request.meals_per_day} meals from the inventory. Use their EXACT names.
+2. Assign a `target_calories` to each meal based on the sports science timing rules.
+3. The sum of all `target_calories` MUST exactly equal {macros['daily_calories']}.
+"""
+
+        plan: DietPlan = self.client.chat.completions.create(
+            response_model=DietPlan,
+            messages=[
+                {"role": "system", "content": "You are a professional sports nutritionist."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        # Scale the meals perfectly using Python
+        final_meals = []
+        for selection in plan.meals:
+            base_meal = self._get_base_meal(selection.meal_name, inventory)
+            if base_meal:
+                scaled = self._scale_meal(base_meal, selection.target_calories)
+                scaled["meal_time"] = selection.meal_time
+                final_meals.append(scaled)
+            else:
+                print(f"WARNING: LLM Hallucinated meal '{selection.meal_name}'.")
 
         return {
             "tdee": tdee,
             "macros": macros,
-            "meal_plan": meal_plan
+            "meal_plan": {
+                "meals": final_meals,
+                "daily_calories": plan.daily_calories,
+                "daily_protein": plan.daily_protein,
+                "daily_carbs": plan.daily_carbs,
+                "daily_fat": plan.daily_fat
+            }
         }

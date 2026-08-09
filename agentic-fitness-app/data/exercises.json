@@ -448,5 +448,65 @@
       "Stand next to the cable tower and pull the cable across your body.",
       "Lead with your elbows to isolate the side deltoid."
     ]
+  },
+  {
+    "name": "Lying Dumbbell Leg Curl",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [
+      "Calves"
+    ],
+    "equipment": "Dumbbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Place a dumbbell between your feet and lie face down.",
+      "Curl the dumbbell towards your glutes while keeping your hips pressed against the floor."
+    ]
+  },
+  {
+    "name": "Glute Bridge Walkout",
+    "primary_muscle": "Hamstrings",
+    "secondary_muscles": [
+      "Glutes",
+      "Core"
+    ],
+    "equipment": "Bodyweight",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Start in a glute bridge position.",
+      "Slowly walk your feet out away from your body, then walk them back in."
+    ]
+  },
+  {
+    "name": "Dumbbell Overhead Tricep Extension",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "equipment": "Dumbbell",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Hold the dumbbell vertically behind your head.",
+      "Keep elbows close to your ears to maximize the stretch on the long head of the tricep."
+    ]
+  },
+  {
+    "name": "Dumbbell Skullcrusher",
+    "primary_muscle": "Triceps",
+    "secondary_muscles": [],
+    "equipment": "Dumbbell",
+    "difficulty": "Intermediate",
+    "form_cues": [
+      "Lie on a bench or the floor.",
+      "Lower the dumbbells towards your shoulders, keeping elbows pointed up."
+    ]
+  },
+  {
+    "name": "Dumbbell Calf Raise",
+    "primary_muscle": "Calves",
+    "secondary_muscles": [],
+    "equipment": "Dumbbell",
+    "difficulty": "Beginner",
+    "form_cues": [
+      "Hold a dumbbell in each hand and stand on the edge of a step.",
+      "Lower your heels for a deep stretch, then press up onto your toes."
+    ]
   }
 ]
