@@ -10,7 +10,8 @@ fastapi
 uvicorn
 llama-index-retrievers-bm25
 rank-bm25
-groq
-llama-index-llms-groq
+instructor
+google-generativeai
+llama-index-llms-gemini
 python-dotenv
 pydantic-settings
