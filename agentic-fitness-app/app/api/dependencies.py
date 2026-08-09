@@ -1,6 +1,6 @@
 from functools import lru_cache
-from groq import Groq
-from app.core.llm_factory import get_groq_client
+import google.generativeai as genai
+from app.core.llm_factory import get_gemini_client
 from app.services.rag_service import RAGService
 from app.services.diet_service import DietService
 from app.services.program_service import ProgramService
@@ -8,9 +8,9 @@ from app.services.exercise_service import ExerciseService
 from app.services.meal_service import MealService
 
 @lru_cache
-def get_llm_client() -> Groq:
-    """Provides a singleton Groq client instance."""
-    return get_groq_client()
+def get_llm_client() -> genai.GenerativeModel:
+    """Provides a singleton Gemini client instance."""
+    return get_gemini_client()
 
 @lru_cache
 def get_rag_service() -> RAGService:
