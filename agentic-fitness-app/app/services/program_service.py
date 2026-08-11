@@ -138,3 +138,91 @@ Rules:
             "volume_settings": volume,
             "program": program.model_dump()
         }
+
+    def stream_training_program(self, request: TrainingProgramRequest):
+        yield {"status": "initializing coach core..."}
+        
+        try:
+            goal_enum = Goal(request.goal.lower())
+        except ValueError:
+            goal_enum = Goal.HYPERTROPHY
+
+        yield {"status": "calculating optimal volume..."}
+        volume = self.calc.calculate_training_volume(request.available_minutes, goal_enum)
+        
+        yield {"status": "querying sports science literature..."}
+        injuries = request.injuries if request.injuries else "none"
+        rag_context = self.rag_service.get_training_context(
+            request.goal, 
+            request.days_per_week, 
+            request.equipment, 
+            injuries
+        )
+        
+        yield {"status": "building exercise inventory..."}
+        inventory = self.exercise_service.get_filtered_exercises(equipment=request.equipment)
+        inventory_str = json.dumps(inventory, indent=2)
+
+        prompt = f"""
+You are an elite, science-based strength and conditioning coach. 
+Your task is to build a {request.days_per_week}-day training program for a {request.goal} goal.
+
+### TARGET VOLUME SETTINGS (Hit these exactly):
+- Sets per exercise: {volume['sets_per_exercise']}
+- Exercises per session: {volume['exercises_per_session']}
+- Rep range: {volume['rep_range']}
+- Rest between sets: {volume['rest_between_sets_seconds']} seconds
+
+### SPORTS SCIENCE CONTEXT (Follow this strictly):
+{rag_context}
+
+### AVAILABLE EXERCISE INVENTORY:
+You MUST ONLY choose exercises from this JSON inventory. You cannot invent new exercises.
+{inventory_str}
+
+Rules:
+1. Every single session MUST have exactly {volume['exercises_per_session']} exercises.
+2. Every single exercise MUST have exactly {volume['sets_per_exercise']} sets.
+3. Every single exercise MUST have the rep range '{volume['rep_range']}'.
+4. Every single exercise MUST have a rest period of {volume['rest_between_sets_seconds']} seconds.
+5. Provide a specific science-backed tip from the RAG context in the notes for each exercise.
+6. MANDATORY MUSCLE COVERAGE: You have exactly {volume['exercises_per_session'] * request.days_per_week} total exercise slots for the entire week. You MUST assign at least 1 exercise to EVERY single major muscle group (Chest, Back, Quads, Hamstrings, Shoulders, Biceps, Triceps, Calves, Core) BEFORE you assign a second exercise to any muscle group. Do not ignore Hamstrings or Calves!
+7. EXACT NAMES ONLY: You MUST use the exact `name` string from the JSON inventory provided. Do not shorten or modify names (e.g., use "Barbell Bench Press", NOT "Bench Press").
+"""
+
+        messages = [
+            {"role": "system", "content": "You are a professional strength and conditioning coach."},
+            {"role": "user", "content": prompt}
+        ]
+
+        max_retries = 3
+        program = None
+
+        for attempt in range(max_retries):
+            yield {"status": f"generating macro split (attempt {attempt + 1})..."}
+            program = self.client.chat.completions.create(
+                response_model=TrainingProgram,
+                messages=messages
+            )
+            
+            yield {"status": "validating anatomical coverage..."}
+            errors = self._validate_program(program, inventory, request.days_per_week)
+            
+            if not errors:
+                yield {"status": "validation passed! finalising..."}
+                break
+            else:
+                if attempt < max_retries - 1:
+                    yield {"status": f"validation failed. recalculating..."}
+                    messages.append({"role": "assistant", "content": program.model_dump_json()})
+                    messages.append({"role": "user", "content": f"Your generated program failed validation with the following errors:\n" + "\n".join(errors) + "\nPlease correct your mistakes and regenerate the program."})
+                else:
+                    yield {"status": "max retries reached. forcing output..."}
+
+        yield {
+            "result": {
+                "volume_settings": volume,
+                "program": program.model_dump()
+            }
+        }
+

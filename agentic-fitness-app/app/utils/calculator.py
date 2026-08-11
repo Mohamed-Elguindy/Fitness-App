@@ -61,11 +61,12 @@ class CalculatorService:
         caloric_modifiers = self.constants["caloric_modifiers"]
         protein_multipliers = self.constants["protein_multipliers"]
         
-        if goal == Goal.BULK:
+        # Map frontend goals to calculation logic
+        if goal == Goal.BULK or goal == Goal.HYPERTROPHY:
             surplus = caloric_modifiers["bulk_surplus"].get(intensity.lower(), 300)
             calories = tdee + surplus
             protein_mult = protein_multipliers["bulk"]
-        elif goal == Goal.CUT:
+        elif goal == Goal.CUT or goal == "fat_loss":
             deficit = caloric_modifiers["cut_deficit"].get(intensity.lower(), 400)
             calories = tdee - deficit
             protein_mult = protein_multipliers["cut"]
