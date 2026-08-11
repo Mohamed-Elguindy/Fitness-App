@@ -14,7 +14,7 @@ from llama_index.core import (
     Settings
 )
 from llama_index.core.schema import TextNode
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.embeddings.fastembed import FastEmbedEmbedding
 from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.core.retrievers import QueryFusionRetriever
 from llama_index.core.llms import MockLLM
@@ -33,8 +33,8 @@ class RAGService:
         else:
             Settings.llm = Gemini(model="models/gemini-3.6-flash", api_key=settings.GEMINI_API_KEY)
             
-        Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5", device="cpu")
-        
+        Settings.embed_model = FastEmbedEmbedding(model_name="BAAI/bge-small-en-v1.5")
+            
         # Paths
         self.app_root = Path(__file__).resolve().parent.parent.parent
         self.storage_dir = self.app_root / "storage"

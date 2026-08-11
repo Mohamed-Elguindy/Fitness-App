@@ -15,3 +15,8 @@ google-generativeai
 llama-index-llms-gemini
 python-dotenv
 pydantic-settings
+sqlalchemy
+psycopg2-binary
+fastembed
+llama-index-embeddings-fastembed
+llama-index-postprocessor-sbert-rerank

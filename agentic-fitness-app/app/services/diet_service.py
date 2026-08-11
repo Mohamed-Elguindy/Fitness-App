@@ -109,14 +109,113 @@ Rules:
             else:
                 print(f"WARNING: LLM Hallucinated meal '{selection.meal_name}'.")
 
+        # Recalculate top-level macros based on actual scaled meals to ensure math is perfectly accurate
+        actual_calories = sum(m["total_calories"] for m in final_meals)
+        actual_protein = sum(m["total_protein"] for m in final_meals)
+        actual_carbs = sum(m["total_carbs"] for m in final_meals)
+        actual_fat = sum(m["total_fat"] for m in final_meals)
+
         return {
             "tdee": tdee,
             "macros": macros,
             "meal_plan": {
                 "meals": final_meals,
-                "daily_calories": plan.daily_calories,
-                "daily_protein": plan.daily_protein,
-                "daily_carbs": plan.daily_carbs,
-                "daily_fat": plan.daily_fat
+                "daily_calories": round(actual_calories, 2),
+                "daily_protein": round(actual_protein, 2),
+                "daily_carbs": round(actual_carbs, 2),
+                "daily_fat": round(actual_fat, 2)
+            }
+        }
+
+    def stream_diet_plan(self, request: DietPlanRequest):
+        yield {"status": "initializing nutrition core..."}
+
+        try:
+            activity = ActivityLevel(request.activity_level.lower())
+        except ValueError:
+            activity = ActivityLevel.MODERATE
+            
+        try:
+            goal_enum = Goal(request.goal.lower())
+        except ValueError:
+            goal_enum = Goal.MAINTENANCE
+
+        yield {"status": "calculating metabolic rate (TDEE)..."}
+        tdee = self.calc.calculate_tdee(request.weight_kg, request.height_cm, request.age, request.gender, activity)
+        
+        yield {"status": "calculating optimal macronutrient split..."}
+        macros = self.calc.calculate_macros(tdee, request.weight_kg, goal_enum, intensity=request.intensity)
+        
+        yield {"status": "querying sports science literature..."}
+        rag_context = self.rag_service.get_diet_context(request.goal, dietary_restrictions="none")
+        
+        yield {"status": "building food inventory..."}
+        inventory = {
+            "breakfasts": self.meal_service.filter_meals("breakfasts", request.budget),
+            "lunches": self.meal_service.filter_meals("lunches", request.budget),
+            "dinners": self.meal_service.filter_meals("dinners", request.budget),
+            "pre_workout": self.meal_service.filter_meals("pre_workout", request.budget),
+            "post_workout": self.meal_service.filter_meals("post_workout", request.budget),
+            "before_bed": self.meal_service.filter_meals("before_bed", request.budget)
+        }
+        
+        inventory_str = json.dumps(inventory, indent=2)
+
+        prompt = f"""
+You are an elite, science-based sports nutritionist. 
+Your task is to build a {request.meals_per_day}-meal diet plan that EXACTLY hits these daily targets:
+- Calories: {macros['daily_calories']} kcal
+- Protein: {macros['protein_g']}g
+- Carbs: {macros['carbs_g']}g
+- Fat: {macros['fat_g']}g
+
+### SPORTS SCIENCE CONTEXT (Follow this strictly):
+{rag_context}
+
+### AVAILABLE MEAL INVENTORY:
+You MUST ONLY choose meals from this JSON inventory.
+{inventory_str}
+
+Rules:
+1. Choose exactly {request.meals_per_day} meals from the inventory. Use their EXACT names.
+2. Assign a `target_calories` to each meal based on the sports science timing rules.
+3. The sum of all `target_calories` MUST exactly equal {macros['daily_calories']}.
+"""
+
+        yield {"status": "generating meal plan..."}
+        plan: DietPlan = self.client.chat.completions.create(
+            response_model=DietPlan,
+            messages=[
+                {"role": "system", "content": "You are a professional sports nutritionist."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        yield {"status": "scaling ingredients perfectly..."}
+        final_meals = []
+        for selection in plan.meals:
+            base_meal = self._get_base_meal(selection.meal_name, inventory)
+            if base_meal:
+                scaled = self._scale_meal(base_meal, selection.target_calories)
+                scaled["meal_time"] = selection.meal_time
+                final_meals.append(scaled)
+
+        # Recalculate top-level macros based on actual scaled meals to ensure math is perfectly accurate
+        actual_calories = sum(m["total_calories"] for m in final_meals)
+        actual_protein = sum(m["total_protein"] for m in final_meals)
+        actual_carbs = sum(m["total_carbs"] for m in final_meals)
+        actual_fat = sum(m["total_fat"] for m in final_meals)
+
+        yield {
+            "result": {
+                "tdee": tdee,
+                "macros": macros,
+                "meal_plan": {
+                    "meals": final_meals,
+                    "daily_calories": round(actual_calories, 2),
+                    "daily_protein": round(actual_protein, 2),
+                    "daily_carbs": round(actual_carbs, 2),
+                    "daily_fat": round(actual_fat, 2)
+                }
             }
         }
