@@ -15,3 +15,5 @@ google-generativeai
 llama-index-llms-gemini
 python-dotenv
 pydantic-settings
+sqlalchemy
+psycopg2-binary
