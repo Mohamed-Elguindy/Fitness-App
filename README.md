@@ -15,6 +15,43 @@ By combining a sleek **Next.js 16 App Router** frontend with a high-performance 
 
 ---
 
+## 📸 UI Showcase
+
+<table style="width:100%; text-align:center; border-collapse: collapse;">
+  <tr>
+    <td style="width:50%; padding: 10px;">
+      <b>Secure Authentication</b><br/>
+      <img src="assets/auth.jpg" alt="Clerk Auth" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    </td>
+    <td style="width:50%; padding: 10px;">
+      <b>Command Dashboard</b><br/>
+      <img src="assets/dashboard.jpg" alt="Dashboard" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    </td>
+  </tr>
+  <tr>
+    <td style="width:50%; padding: 10px;">
+      <b>Generative Forms</b><br/>
+      <img src="assets/form.jpg" alt="Generation Form" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    </td>
+    <td style="width:50%; padding: 10px;">
+      <b>Streaming AI Reasoner</b><br/>
+      <img src="assets/streaming.jpg" alt="Streaming AI Terminal" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    </td>
+  </tr>
+  <tr>
+    <td style="width:50%; padding: 10px;">
+      <b>Deterministic Macros</b><br/>
+      <img src="assets/diet.jpg" alt="Diet Plan Output" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    </td>
+    <td style="width:50%; padding: 10px;">
+      <b>Agentic RAG Coach</b><br/>
+      <img src="assets/chat.jpg" alt="RAG Chat Interface" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## 🏗️ System Architecture
 
 The application is strictly decoupled into a modern frontend and a scalable backend.
