@@ -1,109 +1,94 @@
-# AI Fitness Coach — Compound AI System
+# ⚡ Agentic Fitness Coach
 
-A production-grade AI backend that acts as a hyper-personalized 
-fitness and mentality coaching engine. Built with FastAPI, 
-LlamaIndex, and Groq LLM.
+A premium, production-grade AI fitness and nutrition platform. This application combines a **Next.js** frontend with a **FastAPI** backend to deliver hyper-personalized training programs, diet plans, and intelligent conversational coaching using Google's Gemini models and advanced RAG (Retrieval-Augmented Generation).
 
-## Architecture
+---
 
-This project combines multiple AI patterns into one system:
+## 🚀 Key Features
 
-- **Agentic RAG** — LlamaIndex RouterQueryEngine dynamically routes 
-  queries to the correct knowledge base.
-- **Advanced Chunking** — Employs Hybrid Semantic chunking on source PDFs for optimal retrieval.
-- **Zero Cold-Start Persistence** — Pre-computed local embeddings are persisted to disk, eliminating startup delays.
-- **LLM Generation** — Groq LLM generates personalized meal plans 
-  and training programs from calculated targets.
-- **Deterministic Logic** — Pure Python calculators for TDEE, macros,
-  and training volume — no AI involved in the math.
+*   **Intelligent RAG Coach**: Ask fitness, nutrition, or mentality questions. The backend dynamically routes your question to the correct vector knowledge base (using HuggingFace embeddings) to provide scientifically accurate answers.
+*   **Hyper-Personalized Diet Plans**: Generates exact, macro-perfect daily meal plans scaled precisely to your metabolic rate (TDEE), goals, and dietary restrictions.
+*   **Dynamic Training Programs**: Builds structured weekly training regimes based on your available days, equipment, and injury history.
+*   **Modern Auth & Database**: Uses **Clerk** for secure JWT authentication and **Neon (PostgreSQL)** for persisting your generated diets and programs.
+*   **Beautiful UI**: A sleek, glassmorphic Next.js frontend built with React, Tailwind CSS, and Framer Motion.
 
-## Features
+---
 
-- `/coach` — Agentic RAG endpoint that routes fitness and mentality 
-  questions to the correct knowledge base.
-- `/diet-plan` — Generates a fully personalized meal plan based on 
-  user stats, goal, intensity, budget, and number of meals.
-- `/training-program` — Generates a weekly training program based on 
-  available time, days, goal, and equipment.
-- Streamlit UI for interactive testing.
+## 🏗️ Architecture Stack
 
-## Tech Stack
+### Frontend (`/web`)
+*   **Framework**: Next.js 16.3 (App Router, Turbopack)
+*   **Styling**: Tailwind CSS + custom glassmorphic aesthetics
+*   **Authentication**: Clerk (React SDK)
+*   **Icons & Animation**: Lucide React, Framer Motion
 
-- **FastAPI** — REST API framework
-- **LlamaIndex** — Agentic RAG, vector search, and storage
-- **Groq** — LLM inference (llama-3.3-70b-versatile)
-- **HuggingFace Embeddings** — Local embeddings (BAAI/bge-small-en-v1.5)
-- **GitHub Actions** — CI/CD for automated PDF data ingestion and RAG testing
-- **Pydantic** — Request validation and DTOs
-- **Streamlit** — Frontend UI
-- **Phoenix** — LLM observability and tracing
+### Backend (`/agentic-fitness-app`)
+*   **Framework**: FastAPI
+*   **Database**: Neon PostgreSQL + SQLAlchemy ORM
+*   **AI/LLM**: Google Gemini (`models/gemini-1.5-flash` via `google-generativeai`)
+*   **Structured Outputs**: `instructor` for strict JSON response parsing
+*   **RAG Engine**: LlamaIndex + `sentence-transformers/all-MiniLM-L6-v2` (pure Python vector search, highly compatible)
 
-## Project Structure
-```
-agentic-fitness-api/
-├── data/
-│   ├── fitness_and_diet/    # Legacy nutrition/gym data
-│   ├── mentality/           # Motivational quotes and mindset data
-│   ├── general/             # Fallback scope definition
-│   ├── nutrition_papers/    # Sports science PDFs (auto-chunked by CI/CD)
-│   └── training_papers/     # Sports science PDFs (auto-chunked by CI/CD)
-├── storage/                 # Pre-computed local vector database
-├── ai_core.py               # Agentic RAG router
-├── knowledge_base.py        # Storage context and index loader
-├── calculator.py            # TDEE, macro, volume calculators
-├── diet_builder.py          # LLM meal plan generator
-├── program_builder.py       # LLM training program generator
-├── schemas.py               # Pydantic DTOs
-├── main.py                  # FastAPI endpoints
-├── app.py                   # Streamlit UI
-└── tests/                   # Pytest suite for RAG evaluation
-```
+---
 
-## CI/CD Pipelines
-This project includes two automated GitHub Actions workflows:
-1. **Data Ingestion (`data-ingestion.yml`)**: Whenever new PDFs are added to `data/*_papers/`, this pipeline automatically chunks the documents, embeds them via BGE-small, and commits the updated vector database (`storage/`) back to the repository.
-2. **RAG Evaluation (`rag-eval.yml`)**: On every Pull Request, an automated suite of Golden Queries is run against the database to mathematically guarantee the search precision remains high (similarity score `> 0.70`).
+## 💻 Local Setup Instructions
 
-## Setup
+This project is built to run on almost any device. We have specifically stripped out legacy libraries that require complex C++ build tools to ensure a smooth setup across Windows, Mac, and Linux.
 
-1. Clone the repository
-2. Create a virtual environment and activate it
-```bash
-python -m venv venv
-source venv/bin/activate    # On Mac/Linux
-venv\Scripts\activate       # On Windows
-```
-3. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-4. Create a `.env` file with your API keys
-```env
-GROQ_API_KEY=your_key_here
-API_NINJAS_KEY=your_key_here
-```
-5. Run the FastAPI server
-```bash
-uvicorn main:app --reload
-```
-6. In a separate terminal run the Streamlit UI
-```bash
-cd agentic-fitness-app
-streamlit run app.py
-```
+### 1. Backend Setup (FastAPI)
 
-## API Endpoints
+1. Open a terminal and navigate to the root directory.
+2. Create and activate a Python virtual environment:
+   ```bash
+   python -m venv venv
+   # On Windows:
+   venv\Scripts\activate
+   # On Mac/Linux:
+   source venv/bin/activate
+   ```
+3. Install the dependencies (optimized for cross-platform compatibility):
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Set up your `.env` file in the `agentic-fitness-app/` directory with the following keys:
+   ```env
+   GEMINI_API_KEY=your_gemini_key_here
+   DATABASE_URL=your_neon_postgres_url_here
+   ```
+5. Run the database migrations to set up your tables:
+   ```bash
+   cd agentic-fitness-app
+   python reset_db_script.py
+   ```
+6. Start the FastAPI backend:
+   ```bash
+   python -m uvicorn app.main:app --reload --port 8000
+   ```
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/coach` | Ask fitness or mentality questions |
-| POST | `/diet-plan` | Generate personalized meal plan |
-| POST | `/training-program` | Generate weekly training program |
+### 2. Frontend Setup (Next.js)
 
-## How The Routing Works
+1. Open a **second** terminal window and navigate to the frontend directory:
+   ```bash
+   cd web
+   ```
+2. Install the Node.js packages:
+   ```bash
+   npm install
+   ```
+3. Set up your `.env.local` file in the `web/` directory with your Clerk keys:
+   ```env
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+   CLERK_SECRET_KEY=your_clerk_secret_key
+   ```
+4. Start the frontend development server:
+   ```bash
+   npm run dev
+   ```
 
-The `/coach` endpoint uses LlamaIndex's `RouterQueryEngine` with 
-`LLMSingleSelector`. When a query arrives the LLM reads the tool 
-descriptions and decides which knowledge base to search before 
-generating an answer. This is Agentic RAG — retrieval plus 
-decision making.
+### 3. Open the App
+Visit [http://localhost:3000](http://localhost:3000) in your browser, log in with Clerk, and start building your ultimate physique!
+
+---
+
+## 🔒 Security Notes
+The backend enforces secure data ownership. All history endpoints decode the Clerk JWT Bearer token to extract the user's secure `clerk_id`, ensuring that your diet plans and training programs are strictly private.
