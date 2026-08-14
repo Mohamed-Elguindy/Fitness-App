@@ -32,22 +32,22 @@ By combining a sleek **Next.js 16** frontend with a high-performance **FastAPI**
 <table style="width:100%; border-collapse: collapse; border: none;">
   <tr>
     <td align="center" style="width:50%; border: none; padding: 10px;">
-      <h3>🔒 Secure Authentication</h3>
-      <img src="assets/auth.jpg" alt="Clerk Auth" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
+      <h3>⚡ Main Landing Page</h3>
+      <img src="assets/streaming.jpg" alt="Landing Page" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
     <td align="center" style="width:50%; border: none; padding: 10px;">
-      <h3>🎛️ Command Dashboard</h3>
-      <img src="assets/dashboard.jpg" alt="Dashboard" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
+      <h3>🔒 Secure Authentication</h3>
+      <img src="assets/auth.jpg" alt="Clerk Auth" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
   </tr>
   <tr>
     <td align="center" style="width:50%; border: none; padding: 10px;">
-      <h3>🎚️ Generative Forms</h3>
-      <img src="assets/form.jpg" alt="Generation Form" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
+      <h3>🎛️ Command Dashboard</h3>
+      <img src="assets/dashboard.jpg" alt="Dashboard" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
     <td align="center" style="width:50%; border: none; padding: 10px;">
-      <h3>⚡ Streaming AI Reasoner</h3>
-      <img src="assets/streaming.jpg" alt="Streaming AI Terminal" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
+      <h3>🎚️ Generative Forms</h3>
+      <img src="assets/form.jpg" alt="Generation Form" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
   </tr>
   <tr>
