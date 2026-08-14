@@ -30,12 +30,12 @@ def stream_diet_plan(
                 # Save the final result to the database!
                 try:
                     plan = GeneratedDiet(
-                        user_id=current_user.id,
+                        user_id=current_user.clerk_id,
                         diet_json=update["result"]
                     )
                     db.add(plan)
                     db.commit()
-                    print(f"Saved diet plan for user {current_user.id}")
+                    print(f"Saved diet plan for user {current_user.clerk_id}")
                 except Exception as e:
                     print(f"Error saving diet to DB: {e}")
                     db.rollback()
