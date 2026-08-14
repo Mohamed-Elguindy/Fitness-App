@@ -1,8 +1,20 @@
 <div align="center">
-  <img src="assets/hero_banner.jpg" alt="Agentic Fitness Coach Hero Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px;">
+  <img src="https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/LlamaIndex-0.10.0-8A2BE2?style=for-the-badge&logo=python" alt="LlamaIndex" />
+  <img src="https://img.shields.io/badge/Neon-PostgreSQL-00E599?style=for-the-badge&logo=postgresql" alt="Neon" />
   
+  <br/>
+  <br/>
+
   <h1>⚡ Agentic Fitness Coach</h1>
-  <p><strong>A production-grade, hyper-personalized AI fitness platform built with Next.js, FastAPI, and Agentic RAG.</strong></p>
+  <p><strong>A production-grade, hyper-personalized Compound AI System.</strong></p>
+  
+  <a href="#-overview">Overview</a> • 
+  <a href="#-ui-showcase">UI Showcase</a> • 
+  <a href="#%EF%B8%8F-system-architecture">Architecture</a> • 
+  <a href="#-the-13-phase-engineering-masterplan">13-Phase Masterplan</a> • 
+  <a href="#-local-setup">Setup</a>
 </div>
 
 ---
@@ -11,41 +23,41 @@
 
 Agentic Fitness Coach is not a standard prompt-wrapper. It is a **Compound AI System** that leverages mathematical determinism for safety-critical calculations (TDEE, Macros) and Agentic RAG (Retrieval-Augmented Generation) for subjective coaching. 
 
-By combining a sleek **Next.js 16 App Router** frontend with a high-performance **FastAPI** backend, the application delivers macro-perfect daily diet plans, structured weekly training regimes, and scientifically backed conversational coaching.
+By combining a sleek **Next.js 16** frontend with a high-performance **FastAPI** backend, the application delivers macro-perfect daily diet plans, structured weekly training regimes, and scientifically backed conversational coaching—all while guaranteeing **zero mathematical hallucination**.
 
 ---
 
 ## 📸 UI Showcase
 
-<table style="width:100%; text-align:center; border-collapse: collapse;">
+<table style="width:100%; border-collapse: collapse; border: none;">
   <tr>
-    <td style="width:50%; padding: 10px;">
-      <b>Secure Authentication</b><br/>
-      <img src="assets/auth.jpg" alt="Clerk Auth" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    <td align="center" style="width:50%; border: none; padding: 10px;">
+      <h3>🔒 Secure Authentication</h3>
+      <img src="assets/auth.jpg" alt="Clerk Auth" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
-    <td style="width:50%; padding: 10px;">
-      <b>Command Dashboard</b><br/>
-      <img src="assets/dashboard.jpg" alt="Dashboard" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    <td align="center" style="width:50%; border: none; padding: 10px;">
+      <h3>🎛️ Command Dashboard</h3>
+      <img src="assets/dashboard.jpg" alt="Dashboard" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
   </tr>
   <tr>
-    <td style="width:50%; padding: 10px;">
-      <b>Generative Forms</b><br/>
-      <img src="assets/form.jpg" alt="Generation Form" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    <td align="center" style="width:50%; border: none; padding: 10px;">
+      <h3>🎚️ Generative Forms</h3>
+      <img src="assets/form.jpg" alt="Generation Form" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
-    <td style="width:50%; padding: 10px;">
-      <b>Streaming AI Reasoner</b><br/>
-      <img src="assets/streaming.jpg" alt="Streaming AI Terminal" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    <td align="center" style="width:50%; border: none; padding: 10px;">
+      <h3>⚡ Streaming AI Reasoner</h3>
+      <img src="assets/streaming.jpg" alt="Streaming AI Terminal" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
   </tr>
   <tr>
-    <td style="width:50%; padding: 10px;">
-      <b>Deterministic Macros</b><br/>
-      <img src="assets/diet.jpg" alt="Diet Plan Output" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    <td align="center" style="width:50%; border: none; padding: 10px;">
+      <h3>🥩 Deterministic Macros</h3>
+      <img src="assets/diet.jpg" alt="Diet Plan Output" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
-    <td style="width:50%; padding: 10px;">
-      <b>Agentic RAG Coach</b><br/>
-      <img src="assets/chat.jpg" alt="RAG Chat Interface" width="100%" style="border-radius: 8px; margin-top: 8px;"/>
+    <td align="center" style="width:50%; border: none; padding: 10px;">
+      <h3>💬 Agentic RAG Coach</h3>
+      <img src="assets/chat.jpg" alt="RAG Chat Interface" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
   </tr>
 </table>
@@ -97,44 +109,60 @@ graph LR
     RAG -- "Context Augmentation" --> LLM
 ```
 
-### 1. The Frontend (`/web`)
-*   **Next.js 16.3 (Turbopack)**: Blazing fast server-side rendering and client routing.
-*   **Aesthetics**: Built with Tailwind CSS and Framer Motion, featuring a dark-themed, glassmorphic UI.
-*   **State & Auth**: Integrated seamlessly with **Clerk** for secure user authentication.
+---
 
-### 2. The Backend (`/agentic-fitness-app`)
-*   **FastAPI Engine**: Fully asynchronous, high-performance Python backend.
-*   **Neon Database**: Serverless PostgreSQL manages user profiles and persists generated diets/programs linked to `clerk_id`.
-*   **Instructor**: Enforces rigorous JSON schemas on Google Gemini's outputs, guaranteeing that the frontend receives parsable arrays rather than raw markdown text.
+## 🚀 The 13-Phase Engineering Masterplan
 
-### 3. The Agentic RAG Engine
-The `/coach` endpoint utilizes **LlamaIndex** to act as a routing agent:
-1.  **Query Analysis**: The LLM reads the incoming user question.
-2.  **Dynamic Routing**: It selects the most appropriate local Vector Index (`Nutrition`, `Training`, or `Mentality`) based on semantic similarity.
-3.  **Synthesis**: It retrieves chunks of actual sports science literature and synthesizes a scientifically accurate, highly motivational response.
+This system was engineered from the ground up over 13 distinct phases. Click to expand the architecture deep-dive:
 
-### 4. Deterministic Guardrails
-AI is prone to hallucinations, which is dangerous for caloric mathematics. This system **completely isolates** math from the LLM. TDEE, macronutrient splits, and volumetric adjustments are calculated using strict Python implementations of the Harris-Benedict and Mifflin-St Jeor equations. The LLM is only used to select and scale recipes to fit those mathematical constraints perfectly.
+<details>
+<summary><b>🧠 The Intelligence Layer (Phases 1-6)</b></summary>
+
+1. **Data Ingestion & Chunking**: Parsed advanced sports science PDFs into manageable text nodes using hybrid chunking strategies.
+2. **Local Embeddings**: Converted text into dense mathematical vectors using the open-source `BAAI/bge-small-en-v1.5` model for private, fast processing.
+3. **Vector Persistence**: Saved embeddings to a local JSON database for instant, zero-cold-start booting.
+4. **Hybrid Search Integration**: Combined semantic vector search with BM25 exact-keyword search to accurately retrieve specific supplements and general hypertrophy concepts simultaneously.
+5. **Cross-Encoder Reranking**: Implemented a neural cross-encoder (`ms-marco-MiniLM-L-2-v2`) to re-score and filter the top 3 most relevant paragraphs, drastically reducing noise.
+6. **Agentic Routing**: Integrated LlamaIndex `RouterQueryEngine` allowing the LLM to dynamically route queries to specific databases (Nutrition, Training, or Mentality) rather than searching blindly.
+</details>
+
+<details>
+<summary><b>⚙️ The Logic & Backend Layer (Phases 7-9)</b></summary>
+
+7. **Deterministic Guardrails**: Replaced LLM math with strict Python calculators. TDEE, macronutrient distributions, and volumetric meal sizing are hard-coded to ensure biologically optimal numbers.
+8. **Structured Generation**: Utilized the `Instructor` library to force Gemini to output perfect, strictly-typed Pydantic JSON schemas instead of raw markdown text.
+9. **API Development**: Wrapped the entire intelligence engine in a high-performance, asynchronous FastAPI server.
+</details>
+
+<details>
+<summary><b>💻 The Application Layer (Phases 10-11)</b></summary>
+
+10. **Frontend Engineering**: Built a premium, glassmorphic Next.js 16 UI leveraging Server-Sent Events (SSE) to stream the AI's "thinking" to the user in real-time.
+11. **Security & Persistence**: Integrated Clerk for JWT authentication and a Neon Serverless PostgreSQL database to securely persist generated diets and programs by user ID.
+</details>
+
+<details>
+<summary><b>🛡️ The Production Layer (Phases 12-13)</b></summary>
+
+12. **RAG Evaluation (LLM-as-a-Judge)**: Built an automated testing suite where a zero-temperature LLM mathematically scores the RAG pipeline on *Faithfulness* and *Answer Relevance*.
+13. **CI/CD Pipelines**: Configured GitHub Actions to automatically run the LLM Evaluation Suite on every pull request. If the AI hallucinates, the build fails.
+</details>
 
 ---
 
-## 💻 Local Setup Instructions
+## 💻 Local Setup
 
-This system is engineered to run seamlessly across Windows, Mac, and Linux. All legacy C++ compilation dependencies (like FastEmbed and PyStemmer) have been replaced with highly compatible Python-native alternatives (`sentence-transformers`).
+This system is engineered to run seamlessly across Windows, Mac, and Linux.
 
 ### 1. Backend Setup (FastAPI)
 
-Open a terminal and navigate to the project root:
-
 ```bash
-# 1. Create a virtual environment
+# 1. Create and activate a virtual environment
 python -m venv venv
-
-# 2. Activate it
 venv\Scripts\activate       # Windows
-source venv/bin/activate    # Mac/Linux
+# source venv/bin/activate  # Mac/Linux
 
-# 3. Install Python dependencies
+# 2. Install Python dependencies
 pip install -r requirements.txt
 ```
 
@@ -153,7 +181,7 @@ python -m uvicorn app.main:app --reload --port 8000
 
 ### 2. Frontend Setup (Next.js)
 
-Open a **second** terminal window and navigate to the `web/` directory:
+Open a **second** terminal window:
 
 ```bash
 cd web
@@ -176,5 +204,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser, securely lo
 
 ---
 
-## 🔒 Security & Privacy
-The backend enforces strict data ownership. All history endpoints decode the Clerk JWT Bearer token natively in Python to extract the user's secure `clerk_id`, guaranteeing that user diet plans and training programs are entirely private and impenetrable to unauthorized access.
+<div align="center">
+  <p>Built with 💻 and ☕</p>
+</div>
