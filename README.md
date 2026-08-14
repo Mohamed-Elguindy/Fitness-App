@@ -20,46 +20,44 @@ By combining a sleek **Next.js 16 App Router** frontend with a high-performance 
 The application is strictly decoupled into a modern frontend and a scalable backend.
 
 ```mermaid
-graph TD
-    %% Frontend Layer
-    subgraph Frontend [Next.js Web Client]
-        UI[React Components / Tailwind CSS]
-        Auth[Clerk JWT Authentication]
-        Dash[Dashboard & History]
+graph LR
+    %% Client Tier
+    subgraph Client [Web Frontend]
+        UI[Next.js App Router]
+        Auth[Clerk Authentication]
     end
 
-    %% Backend Layer
-    subgraph Backend [FastAPI Backend Server]
-        API[REST API Routers]
-        AuthGuard[Clerk JWT Verifier]
-        LLM[Google Gemini 1.5 Flash]
+    %% API Tier
+    subgraph API [FastAPI Server]
+        Router[API Endpoints]
         DB[(Neon PostgreSQL)]
     end
 
-    %% AI / Logic Core
-    subgraph Core [AI & Deterministic Core]
+    %% Engine Tier
+    subgraph Engine [AI & Logic Core]
         Calc[Deterministic Calculators]
-        Instructor[JSON Schema Parser]
-        RAG[LlamaIndex RouterQueryEngine]
+        Parser[Instructor JSON Schema]
+        RAG[LlamaIndex Router]
     end
 
-    %% Vector Stores
-    subgraph VectorDB [Local Vector Storage]
-        Nutri[(Nutrition Index)]
-        Train[(Training Index)]
-        Mental[(Mentality Index)]
+    %% Data & Model Tier
+    subgraph Intelligence [Intelligence Layer]
+        LLM[Gemini 3.6 Flash]
+        VectorDB[(Local Vector Indexes)]
     end
 
-    %% Connections
-    UI <-->|HTTP JSON/Streams| API
-    Auth -->|Validates Token| AuthGuard
-    API --> LLM
-    API --> Calc
-    API <--> DB
-    LLM <--> Instructor
-    API --> RAG
-    RAG <--> VectorDB
-    VectorDB <-->|HuggingFace Embeddings| RAG
+    %% Relationships
+    UI -- "REST / SSE Streams" --> Router
+    Auth -- "Validates JWT" --> Router
+    Router -- "Saves History" --> DB
+
+    Router -- "TDEE / Macros" --> Calc
+    Router -- "Routes Query" --> RAG
+    Router -- "Generates Plan" --> Parser
+
+    Parser -- "Structured Prompting" --> LLM
+    RAG -- "Semantic Search" --> VectorDB
+    RAG -- "Context Augmentation" --> LLM
 ```
 
 ### 1. The Frontend (`/web`)
