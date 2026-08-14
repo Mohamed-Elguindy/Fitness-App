@@ -143,3 +143,44 @@ class CalculatorService:
                 "bottlenecked_by_time": max_physical_exercises < optimal_exercises
             }
         }
+
+    def calculate_meal_distribution(self, daily_calories: float, meals_per_day: int) -> list[Dict[str, any]]:
+        """Returns exact calorie distributions based on biologically optimal meal sizes."""
+        if meals_per_day == 3:
+            dist = [
+                {"meal_time": "Breakfast", "pct": 0.30},
+                {"meal_time": "Lunch", "pct": 0.40},
+                {"meal_time": "Dinner", "pct": 0.30}
+            ]
+        elif meals_per_day == 5:
+            dist = [
+                {"meal_time": "Breakfast", "pct": 0.20},
+                {"meal_time": "Lunch", "pct": 0.30},
+                {"meal_time": "Pre-Workout", "pct": 0.10},
+                {"meal_time": "Dinner", "pct": 0.30},
+                {"meal_time": "Before Bed", "pct": 0.10}
+            ]
+        else: # Default 4 meals
+            dist = [
+                {"meal_time": "Breakfast", "pct": 0.25},
+                {"meal_time": "Lunch", "pct": 0.35},
+                {"meal_time": "Dinner", "pct": 0.30},
+                {"meal_time": "Before Bed", "pct": 0.10}
+            ]
+            
+        targets = []
+        for d in dist:
+            targets.append({
+                "meal_time": d["meal_time"],
+                "target_calories": round(daily_calories * d["pct"])
+            })
+            
+        # Ensure exact match due to rounding
+        total_assigned = sum(t["target_calories"] for t in targets)
+        diff = int(round(daily_calories)) - total_assigned
+        if diff != 0:
+            # Add difference to the largest meal (usually Lunch)
+            largest_meal = max(targets, key=lambda x: x["target_calories"])
+            largest_meal["target_calories"] += diff
+            
+        return targets

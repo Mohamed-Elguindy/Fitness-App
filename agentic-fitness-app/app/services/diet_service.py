@@ -68,6 +68,9 @@ class DietService:
         }
         
         inventory_str = json.dumps(inventory, indent=2)
+        
+        meal_targets = self.calc.calculate_meal_distribution(macros['daily_calories'], request.meals_per_day)
+        targets_str = "\n".join([f"- {t['meal_time']}: {t['target_calories']} kcal" for t in meal_targets])
 
         prompt = f"""
 You are an elite, science-based sports nutritionist. 
@@ -77,17 +80,20 @@ Your task is to build a {request.meals_per_day}-meal diet plan that EXACTLY hits
 - Carbs: {macros['carbs_g']}g
 - Fat: {macros['fat_g']}g
 
+### EXACT CALORIE DISTRIBUTION (MANDATORY):
+You MUST assign exactly these calories to the respective meals. Do not deviate.
+{targets_str}
+
 ### SPORTS SCIENCE CONTEXT (Follow this strictly):
 {rag_context}
 
 ### AVAILABLE MEAL INVENTORY:
-You MUST ONLY choose meals from this JSON inventory.
+You MUST ONLY choose meals from this JSON inventory. Match light meals (like Greek Yogurt or Casein) to small calorie slots, and heavy meals (like Chicken Rice) to large calorie slots.
 {inventory_str}
 
 Rules:
 1. Choose exactly {request.meals_per_day} meals from the inventory. Use their EXACT names.
-2. Assign a `target_calories` to each meal based on the sports science timing rules.
-3. The sum of all `target_calories` MUST exactly equal {macros['daily_calories']}.
+2. You MUST assign the `target_calories` to each meal EXACTLY as specified in the EXACT CALORIE DISTRIBUTION section above.
 """
 
         plan: DietPlan = self.client.chat.completions.create(
@@ -160,6 +166,9 @@ Rules:
         }
         
         inventory_str = json.dumps(inventory, indent=2)
+        
+        meal_targets = self.calc.calculate_meal_distribution(macros['daily_calories'], request.meals_per_day)
+        targets_str = "\n".join([f"- {t['meal_time']}: {t['target_calories']} kcal" for t in meal_targets])
 
         prompt = f"""
 You are an elite, science-based sports nutritionist. 
@@ -169,17 +178,20 @@ Your task is to build a {request.meals_per_day}-meal diet plan that EXACTLY hits
 - Carbs: {macros['carbs_g']}g
 - Fat: {macros['fat_g']}g
 
+### EXACT CALORIE DISTRIBUTION (MANDATORY):
+You MUST assign exactly these calories to the respective meals. Do not deviate.
+{targets_str}
+
 ### SPORTS SCIENCE CONTEXT (Follow this strictly):
 {rag_context}
 
 ### AVAILABLE MEAL INVENTORY:
-You MUST ONLY choose meals from this JSON inventory.
+You MUST ONLY choose meals from this JSON inventory. Match light meals (like Greek Yogurt or Casein) to small calorie slots, and heavy meals (like Chicken Rice) to large calorie slots.
 {inventory_str}
 
 Rules:
 1. Choose exactly {request.meals_per_day} meals from the inventory. Use their EXACT names.
-2. Assign a `target_calories` to each meal based on the sports science timing rules.
-3. The sum of all `target_calories` MUST exactly equal {macros['daily_calories']}.
+2. You MUST assign the `target_calories` to each meal EXACTLY as specified in the EXACT CALORIE DISTRIBUTION section above.
 """
 
         yield {"status": "generating meal plan..."}
