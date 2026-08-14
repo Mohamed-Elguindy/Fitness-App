@@ -46,8 +46,18 @@ By combining a sleek **Next.js 16** frontend with a high-performance **FastAPI**
       <img src="assets/dashboard.jpg" alt="Dashboard" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
     <td align="center" style="width:50%; border: none; padding: 10px;">
-      <h3>🎚️ Generative Forms</h3>
-      <img src="assets/form.jpg" alt="Generation Form" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
+      <h3>🏋️ Training Configuration</h3>
+      <img src="assets/form.jpg" alt="Training Form" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="width:50%; border: none; padding: 10px;">
+      <h3>🥗 Nutrition Configuration</h3>
+      <img src="assets/nutrition_form.jpg" alt="Nutrition Form" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
+    </td>
+    <td align="center" style="width:50%; border: none; padding: 10px;">
+      <h3>💪 Training Program Output</h3>
+      <img src="assets/training.jpg" alt="Training Program" width="100%" style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"/>
     </td>
   </tr>
   <tr>
