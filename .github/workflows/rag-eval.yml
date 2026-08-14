@@ -28,6 +28,7 @@ jobs:
       - name: Run RAG Golden Queries Test
         working-directory: ./agentic-fitness-app
         env:
-          GROQ_API_KEY: "dummy_key_for_testing"
+          # Pulls the real API key from your GitHub Repository Secrets so the LLM Judge can run
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          PYTHONPATH="." python -m pytest tests/test_rag.py -v
+          PYTHONPATH="." python -m pytest tests/ -v
