@@ -14,9 +14,7 @@ from llama_index.core import (
     Settings
 )
 from llama_index.core.schema import TextNode
-from llama_index.embeddings.fastembed import FastEmbedEmbedding
-from llama_index.retrievers.bm25 import BM25Retriever
-from llama_index.core.retrievers import QueryFusionRetriever
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.llms import MockLLM
 from llama_index.core.tools import QueryEngineTool
 from llama_index.core.query_engine import RouterQueryEngine, RetrieverQueryEngine
@@ -33,7 +31,7 @@ class RAGService:
         else:
             Settings.llm = Gemini(model="models/gemini-3.6-flash", api_key=settings.GEMINI_API_KEY)
             
-        Settings.embed_model = FastEmbedEmbedding(model_name="BAAI/bge-small-en-v1.5")
+        Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
             
         # Paths
         self.app_root = Path(__file__).resolve().parent.parent.parent
@@ -101,39 +99,13 @@ class RAGService:
         
         return index
 
-    def _get_hybrid_retriever(self, domain: str, similarity_top_k: int = 3) -> QueryFusionRetriever:
+    def _get_hybrid_retriever(self, domain: str, similarity_top_k: int = 3):
         index = self._get_index(domain)
         nodes = list(index.docstore.docs.values())
         actual_k = min(similarity_top_k, len(nodes)) if nodes else 1
         
-        vector_retriever = index.as_retriever(similarity_top_k=actual_k)
-        
-        domain_bm25_path = self.storage_dir / f"{domain}_bm25"
-        
-        if domain_bm25_path.exists() and any(domain_bm25_path.iterdir()):
-            print(f"Loading {domain} BM25 index from storage...")
-            bm25_retriever = BM25Retriever.from_persist_dir(str(domain_bm25_path))
-        else:
-            print(f"Building {domain} BM25 index from nodes...")
-            bm25_retriever = BM25Retriever.from_defaults(nodes=nodes)
-            
-            print(f"Persisting {domain} BM25 index to storage...")
-            os.makedirs(domain_bm25_path, exist_ok=True)
-            bm25_retriever.persist(str(domain_bm25_path))
-            
-        bm25_retriever.similarity_top_k = actual_k
-        
-        hybrid_retriever = QueryFusionRetriever(
-            [vector_retriever, bm25_retriever],
-            similarity_top_k=actual_k * 3,  # Increase initial catch for reranker
-            num_queries=1,
-            mode="reciprocal_rerank",
-            use_async=False,
-            retriever_weights=[0.6, 0.4],
-            llm=MockLLM()
-        )
-        
-        return hybrid_retriever
+        vector_retriever = index.as_retriever(similarity_top_k=actual_k * 3)
+        return vector_retriever
 
     def _build_router(self) -> RouterQueryEngine:
         from llama_index.core.postprocessor import SentenceTransformerRerank

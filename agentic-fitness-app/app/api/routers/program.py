@@ -30,12 +30,12 @@ def stream_training_program(
                 # Save the final result to the database!
                 try:
                     plan = GeneratedProgram(
-                        user_id=current_user.id,
+                        user_id=current_user.clerk_id,
                         program_json=update["result"]
                     )
                     db.add(plan)
                     db.commit()
-                    print(f"Saved training program for user {current_user.id}")
+                    print(f"Saved training program for user {current_user.clerk_id}")
                 except Exception as e:
                     print(f"Error saving program to DB: {e}")
                     db.rollback()

@@ -11,8 +11,8 @@ def get_user_history(
     current_user: User = Depends(verify_clerk_token),
     db: Session = Depends(get_db)
 ):
-    diets = db.query(GeneratedDiet).filter(GeneratedDiet.user_id == current_user.id).order_by(GeneratedDiet.created_at.desc()).all()
-    programs = db.query(GeneratedProgram).filter(GeneratedProgram.user_id == current_user.id).order_by(GeneratedProgram.created_at.desc()).all()
+    diets = db.query(GeneratedDiet).filter(GeneratedDiet.user_id == current_user.clerk_id).order_by(GeneratedDiet.created_at.desc()).all()
+    programs = db.query(GeneratedProgram).filter(GeneratedProgram.user_id == current_user.clerk_id).order_by(GeneratedProgram.created_at.desc()).all()
     
     history = []
     
