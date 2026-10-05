@@ -59,12 +59,12 @@ class DietService:
         
         # Build Food Inventory
         available_meals = {
-            "breakfasts": self.meal_service.filter_meals("breakfasts", request.budget),
-            "lunches": self.meal_service.filter_meals("lunches", request.budget),
-            "dinners": self.meal_service.filter_meals("dinners", request.budget),
-            "pre_workout": self.meal_service.filter_meals("pre_workout", request.budget),
-            "post_workout": self.meal_service.filter_meals("post_workout", request.budget),
-            "before_bed": self.meal_service.filter_meals("before_bed", request.budget)
+            "breakfasts": self.meal_service.find("breakfasts", request.budget),
+            "lunches": self.meal_service.find("lunches", request.budget),
+            "dinners": self.meal_service.find("dinners", request.budget),
+            "pre_workout": self.meal_service.find("pre_workout", request.budget),
+            "post_workout": self.meal_service.find("post_workout", request.budget),
+            "before_bed": self.meal_service.find("before_bed", request.budget)
         }
         
         available_meals_json = json.dumps(available_meals, indent=2)
@@ -157,12 +157,12 @@ Rules:
         
         yield {"status": "building food inventory..."}
         available_meals = {
-            "breakfasts": self.meal_service.filter_meals("breakfasts", request.budget),
-            "lunches": self.meal_service.filter_meals("lunches", request.budget),
-            "dinners": self.meal_service.filter_meals("dinners", request.budget),
-            "pre_workout": self.meal_service.filter_meals("pre_workout", request.budget),
-            "post_workout": self.meal_service.filter_meals("post_workout", request.budget),
-            "before_bed": self.meal_service.filter_meals("before_bed", request.budget)
+            "breakfasts": self.meal_service.find("breakfasts", request.budget),
+            "lunches": self.meal_service.find("lunches", request.budget),
+            "dinners": self.meal_service.find("dinners", request.budget),
+            "pre_workout": self.meal_service.find("pre_workout", request.budget),
+            "post_workout": self.meal_service.find("post_workout", request.budget),
+            "before_bed": self.meal_service.find("before_bed", request.budget)
         }
         
         available_meals_json = json.dumps(available_meals, indent=2)
