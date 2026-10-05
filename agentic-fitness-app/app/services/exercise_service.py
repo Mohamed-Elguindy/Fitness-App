@@ -23,22 +23,22 @@ class ExerciseService:
         """Filter exercises by exact primary or secondary muscle."""
         target = target_muscle.lower()
         results = []
-        for ex in self.exercises:
-            primary = ex.get("primary_muscle", "").lower()
-            secondary = [m.lower() for m in ex.get("secondary_muscles", [])]
-            if target == primary or target in secondary:
-                results.append(ex)
+        for exercise in self.exercises:
+            primary_muscle = exercise.get("primary_muscle", "").lower()
+            secondary_muscles = [muscle.lower() for muscle in exercise.get("secondary_muscles", [])]
+            if target == primary_muscle or target in secondary_muscles:
+                results.append(exercise)
         return results
 
     def get_by_equipment(self, equipment: str) -> List[Dict]:
         """Filter exercises by required equipment."""
         target = equipment.lower()
-        return [ex for ex in self.exercises if ex.get("equipment", "").lower() == target]
+        return [exercise for exercise in self.exercises if exercise.get("equipment", "").lower() == target]
 
     def get_by_difficulty(self, difficulty: str) -> List[Dict]:
         """Filter exercises by difficulty level."""
         target = difficulty.lower()
-        return [ex for ex in self.exercises if ex.get("difficulty", "").lower() == target]
+        return [exercise for exercise in self.exercises if exercise.get("difficulty", "").lower() == target]
 
     def get_filtered_exercises(self, muscle: Optional[str] = None, equipment: Optional[str] = None, difficulty: Optional[str] = None) -> List[Dict]:
         """Combined strict filtering for the LLM tool."""
@@ -47,20 +47,20 @@ class ExerciseService:
         if muscle:
             target = muscle.lower()
             results = [
-                ex for ex in results 
-                if target == ex.get("primary_muscle", "").lower() or target in [m.lower() for m in ex.get("secondary_muscles", [])]
+                exercise for exercise in results 
+                if target == exercise.get("primary_muscle", "").lower() or target in [muscle.lower() for muscle in exercise.get("secondary_muscles", [])]
             ]
             
         if equipment:
-            eq = equipment.lower()
-            if eq == "home":
-                results = [ex for ex in results if ex.get("equipment", "").lower() in ["dumbbell", "bodyweight"]]
-            elif eq == "gym":
+            target_equipment = equipment.lower()
+            if target_equipment == "home":
+                results = [exercise for exercise in results if exercise.get("equipment", "").lower() in ["dumbbell", "bodyweight"]]
+            elif target_equipment == "gym":
                 pass
             else:
-                results = [ex for ex in results if ex.get("equipment", "").lower() == eq]
+                results = [exercise for exercise in results if exercise.get("equipment", "").lower() == target_equipment]
             
         if difficulty:
-            results = [ex for ex in results if ex.get("difficulty", "").lower() == difficulty.lower()]
+            results = [exercise for exercise in results if exercise.get("difficulty", "").lower() == difficulty.lower()]
             
         return results
