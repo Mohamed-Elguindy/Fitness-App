@@ -11,51 +11,51 @@ class ProgramService:
         self.client = instructor.from_gemini(client=llm_client, mode=instructor.Mode.GEMINI_JSON)
         self.exercise_service = ExerciseService()
         self.rag_service = RAGService()
-        self.calc = CalculatorService()
+        self.calculator = CalculatorService()
 
-    def _validate_program(self, program: TrainingProgram, inventory: list, days_per_week: int) -> list[str]:
+    def _validate_program(self, program: TrainingProgram, available_exercises: list, days_per_week: int) -> list[str]:
         errors = []
-        allowed_exercises = {ex["name"].lower(): ex for ex in inventory}
+        allowed_exercises = {exercise["name"].lower(): exercise for exercise in available_exercises}
         
         # 1. Check for exact names and duplicates
         used_exercises = set()
         for session in program.sessions:
             for exercise in session.exercises:
-                ex_name = exercise.exercise_name.lower()
-                if ex_name not in allowed_exercises:
+                exercise_name = exercise.exercise_name.lower()
+                if exercise_name not in allowed_exercises:
                     errors.append(f"Exercise '{exercise.exercise_name}' is not in the inventory. You MUST pick EXACT names from the inventory provided.")
                 else:
-                    if ex_name in used_exercises:
+                    if exercise_name in used_exercises:
                         errors.append(f"You used '{exercise.exercise_name}' more than once in the program. You must select a unique exercise for every single slot.")
-                    used_exercises.add(ex_name)
+                    used_exercises.add(exercise_name)
                     
         # 2. Check Primary Muscle Coverage
         hit_primary_muscles = set()
         for session in program.sessions:
             for exercise in session.exercises:
-                ex_name = exercise.exercise_name.lower()
-                if ex_name in allowed_exercises:
-                    ex_data = allowed_exercises[ex_name]
-                    if "primary_muscle" in ex_data:
-                        hit_primary_muscles.add(ex_data["primary_muscle"].lower())
+                exercise_name = exercise.exercise_name.lower()
+                if exercise_name in allowed_exercises:
+                    exercise_data = allowed_exercises[exercise_name]
+                    if "primary_muscle" in exercise_data:
+                        hit_primary_muscles.add(exercise_data["primary_muscle"].lower())
                         
         # Required macro groups must be hit as PRIMARY muscles
-        hit_str = " ".join(hit_primary_muscles)
+        targeted_muscles_text = " ".join(hit_primary_muscles)
         required = ["chest", "back", "quadriceps", "hamstrings", "shoulder", "bicep", "tricep", "calves"]
-        missing = [req for req in required if req not in hit_str and req + "s" not in hit_str]
+        missing = [required_muscle for required_muscle in required if required_muscle not in targeted_muscles_text and required_muscle + "s" not in targeted_muscles_text]
         
         if missing:
             errors.append(f"Your program forgot to include exercises that target: {', '.join(missing)} AS A PRIMARY MUSCLE. You must include at least one isolation or compound exercise where these are the PRIMARY focus.")
 
         # 3. Check that the primary muscles targeted align with the session's focus_muscles
         for session in program.sessions:
-            focus_str = " ".join(session.focus_muscles).lower()
+            focus_muscles_text = " ".join(session.focus_muscles).lower()
             for exercise in session.exercises:
-                ex_name = exercise.exercise_name.lower()
-                if ex_name in allowed_exercises:
-                    primary = allowed_exercises[ex_name].get("primary_muscle", "").lower()
-                    if primary and primary not in focus_str and primary[:-1] not in focus_str:
-                         errors.append(f"In session '{session.day_name}', you included '{exercise.exercise_name}' (targets {primary}), but the focus muscles for this day are: {', '.join(session.focus_muscles)}. Please replace it with an exercise that matches the day's focus.")
+                exercise_name = exercise.exercise_name.lower()
+                if exercise_name in allowed_exercises:
+                    primary_muscle = allowed_exercises[exercise_name].get("primary_muscle", "").lower()
+                    if primary_muscle and primary_muscle not in focus_muscles_text and primary_muscle[:-1] not in focus_muscles_text:
+                         errors.append(f"In session '{session.day_name}', you included '{exercise.exercise_name}' (targets {primary_muscle}), but the focus muscles for this day are: {', '.join(session.focus_muscles)}. Please replace it with an exercise that matches the day's focus.")
 
         return errors
 
@@ -65,7 +65,7 @@ class ProgramService:
         except ValueError:
             goal_enum = Goal.HYPERTROPHY
 
-        volume = self.calc.calculate_training_volume(request.available_minutes, goal_enum)
+        volume = self.calculator.calculate_training_volume(request.available_minutes, goal_enum)
         
         # Pull RAG Context
         injuries = request.injuries if request.injuries else "none"
@@ -77,10 +77,10 @@ class ProgramService:
         )
         
         # Build Exercise Inventory
-        inventory = self.exercise_service.get_filtered_exercises(equipment=request.equipment)
-        inventory_str = json.dumps(inventory, indent=2)
+        available_exercises = self.exercise_service.get_filtered_exercises(equipment=request.equipment)
+        available_exercises_json = json.dumps(available_exercises, indent=2)
 
-        prompt = f"""
+        training_program_prompt = f"""
 You are an elite, science-based strength and conditioning coach. 
 Your task is to build a {request.days_per_week}-day training program for a {request.goal} goal.
 
@@ -95,7 +95,7 @@ Your task is to build a {request.days_per_week}-day training program for a {requ
 
 ### AVAILABLE EXERCISE INVENTORY:
 You MUST ONLY choose exercises from this JSON inventory. You cannot invent new exercises.
-{inventory_str}
+{available_exercises_json}
 
 Rules:
 1. Every single session MUST have exactly {volume['exercises_per_session']} exercises.
@@ -109,11 +109,12 @@ Rules:
 
         messages = [
             {"role": "system", "content": "You are a professional strength and conditioning coach."},
-            {"role": "user", "content": prompt}
+            {"role": "user", "content": training_program_prompt}
         ]
 
         max_retries = 3
         program = None
+        errors = []
 
         for attempt in range(max_retries):
             program = self.client.chat.completions.create(
@@ -121,7 +122,7 @@ Rules:
                 messages=messages
             )
             
-            errors = self._validate_program(program, inventory, request.days_per_week)
+            errors = self._validate_program(program, available_exercises, request.days_per_week)
             
             if not errors:
                 print(f"Program passed strict validation on attempt {attempt + 1}!")
@@ -136,7 +137,8 @@ Rules:
 
         return {
             "volume_settings": volume,
-            "program": program.model_dump()
+            "program": program.model_dump(),
+            "validation_errors": errors
         }
 
     def stream_training_program(self, request: TrainingProgramRequest):
@@ -148,7 +150,7 @@ Rules:
             goal_enum = Goal.HYPERTROPHY
 
         yield {"status": "calculating optimal volume..."}
-        volume = self.calc.calculate_training_volume(request.available_minutes, goal_enum)
+        volume = self.calculator.calculate_training_volume(request.available_minutes, goal_enum)
         
         yield {"status": "querying sports science literature..."}
         injuries = request.injuries if request.injuries else "none"
@@ -160,10 +162,10 @@ Rules:
         )
         
         yield {"status": "building exercise inventory..."}
-        inventory = self.exercise_service.get_filtered_exercises(equipment=request.equipment)
-        inventory_str = json.dumps(inventory, indent=2)
+        available_exercises = self.exercise_service.get_filtered_exercises(equipment=request.equipment)
+        available_exercises_json = json.dumps(available_exercises, indent=2)
 
-        prompt = f"""
+        training_program_prompt = f"""
 You are an elite, science-based strength and conditioning coach. 
 Your task is to build a {request.days_per_week}-day training program for a {request.goal} goal.
 
@@ -178,7 +180,7 @@ Your task is to build a {request.days_per_week}-day training program for a {requ
 
 ### AVAILABLE EXERCISE INVENTORY:
 You MUST ONLY choose exercises from this JSON inventory. You cannot invent new exercises.
-{inventory_str}
+{available_exercises_json}
 
 Rules:
 1. Every single session MUST have exactly {volume['exercises_per_session']} exercises.
@@ -192,11 +194,12 @@ Rules:
 
         messages = [
             {"role": "system", "content": "You are a professional strength and conditioning coach."},
-            {"role": "user", "content": prompt}
+            {"role": "user", "content": training_program_prompt}
         ]
 
         max_retries = 3
         program = None
+        errors = []
 
         for attempt in range(max_retries):
             yield {"status": f"generating macro split (attempt {attempt + 1})..."}
@@ -206,7 +209,7 @@ Rules:
             )
             
             yield {"status": "validating anatomical coverage..."}
-            errors = self._validate_program(program, inventory, request.days_per_week)
+            errors = self._validate_program(program, available_exercises, request.days_per_week)
             
             if not errors:
                 yield {"status": "validation passed! finalising..."}
@@ -222,7 +225,7 @@ Rules:
         yield {
             "result": {
                 "volume_settings": volume,
-                "program": program.model_dump()
+                "program": program.model_dump(),
+                "validation_errors": errors
             }
         }
-
