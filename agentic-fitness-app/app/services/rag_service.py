@@ -17,6 +17,8 @@ from llama_index.core.schema import TextNode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.llms import MockLLM
 from llama_index.core.tools import QueryEngineTool
+from llama_index.retrievers.bm25 import BM25Retriever
+from llama_index.core.retrievers import QueryFusionRetriever
 from llama_index.core.query_engine import RouterQueryEngine, RetrieverQueryEngine
 from llama_index.core.selectors import LLMSingleSelector
 from llama_index.llms.gemini import Gemini
@@ -105,7 +107,20 @@ class RAGService:
         actual_top_k = min(similarity_top_k, len(text_nodes)) if text_nodes else 1
         
         vector_retriever = index.as_retriever(similarity_top_k=actual_top_k * 3)
-        return vector_retriever
+        
+        bm25_retriever = BM25Retriever.from_defaults(
+            nodes=text_nodes, 
+            similarity_top_k=actual_top_k * 3
+        )
+        
+        hybrid_retriever = QueryFusionRetriever(
+            [vector_retriever, bm25_retriever],
+            similarity_top_k=actual_top_k * 3,
+            num_queries=1,
+            mode="reciprocal_rank_fusion"
+        )
+        
+        return hybrid_retriever
 
     def _build_router(self) -> RouterQueryEngine:
         from llama_index.core.postprocessor import SentenceTransformerRerank
