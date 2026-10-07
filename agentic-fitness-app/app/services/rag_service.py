@@ -24,6 +24,7 @@ from llama_index.core.selectors import LLMSingleSelector
 from llama_index.llms.gemini import Gemini
 
 from app.core.config import settings
+from app.utils.prompts import get_rag_diet_query, get_rag_training_query, get_rag_tool_descriptions
 
 class RAGService:
     def __init__(self):
@@ -149,18 +150,20 @@ class RAGService:
             node_postprocessors=[reranker]
         )
 
+        tool_descriptions = get_rag_tool_descriptions()
+
         fitness_tool = QueryEngineTool.from_defaults(
             query_engine=fitness_query_engine,
-            description="Useful for answering physiological, nutritional, and workout programming questions about bulking, cutting, and gym exercises like bench press, deadlift, and lat pulldown."
+            description=tool_descriptions["fitness"]
         )
 
         mentality_tool = QueryEngineTool.from_defaults(
             query_engine=mentality_query_engine,
-            description="Useful for addressing discipline, lack of motivation, fatigue, wanting to quit, or any psychological barriers using intense tough-love advice."
+            description=tool_descriptions["mentality"]
         )
         general_tool = QueryEngineTool.from_defaults(
             query_engine=general_query_engine,
-            description="Useful for any question that is NOT related to fitness, gym training, nutrition, bulking, cutting, or workout mentality. Use this for all off-topic questions."
+            description=tool_descriptions["general"]
         )
 
         return RouterQueryEngine(
@@ -173,14 +176,14 @@ class RAGService:
         return str(response)
 
     def get_diet_context(self, goal: str, dietary_restrictions: str = "none") -> str:
-        query = f"What are the most important sports science rules for meal timing, protein distribution, and nutrient partitioning for a {goal} diet? Special considerations: {dietary_restrictions}."
+        query = get_rag_diet_query(goal, dietary_restrictions)
         print(f"RAG Diet Query: {query}")
         retriever = self._get_hybrid_retriever("nutrition", similarity_top_k=2)
         retrieved_nodes = retriever.retrieve(query)
         return "\n\n".join([scored_node.node.text.strip() for scored_node in retrieved_nodes])
 
     def get_training_context(self, goal: str, days_per_week: int, equipment: str, injuries: str = "none") -> str:
-        query = f"What are the scientific rules for exercise selection, fatigue management, and volume for a {goal} program that trains {days_per_week} days a week using {equipment} equipment? Special injury considerations: {injuries}."
+        query = get_rag_training_query(goal, days_per_week, equipment, injuries)
         print(f"RAG Training Query: {query}")
         retriever = self._get_hybrid_retriever("training", similarity_top_k=2)
         retrieved_nodes = retriever.retrieve(query)

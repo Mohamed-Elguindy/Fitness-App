@@ -5,6 +5,7 @@ from app.models.schemas import TrainingProgramRequest, TrainingProgram
 from app.services.exercise_service import ExerciseService
 from app.services.rag_service import RAGService
 from app.utils.calculator import CalculatorService, Goal
+from app.utils.prompts import get_training_program_prompt, get_training_system_prompt, get_validation_retry_prompt
 
 class ProgramService:
     def __init__(self, llm_client: genai.GenerativeModel):
@@ -80,35 +81,16 @@ class ProgramService:
         available_exercises = self.exercise_service.get_filtered_exercises(equipment=request.equipment)
         available_exercises_json = json.dumps(available_exercises, indent=2)
 
-        training_program_prompt = f"""
-You are an elite, science-based strength and conditioning coach. 
-Your task is to build a {request.days_per_week}-day training program for a {request.goal} goal.
-
-### TARGET VOLUME SETTINGS (Hit these exactly):
-- Sets per exercise: {volume['sets_per_exercise']}
-- Exercises per session: {volume['exercises_per_session']}
-- Rep range: {volume['rep_range']}
-- Rest between sets: {volume['rest_between_sets_seconds']} seconds
-
-### SPORTS SCIENCE CONTEXT (Follow this strictly):
-{rag_context}
-
-### AVAILABLE EXERCISE INVENTORY:
-You MUST ONLY choose exercises from this JSON inventory. You cannot invent new exercises.
-{available_exercises_json}
-
-Rules:
-1. Every single session MUST have exactly {volume['exercises_per_session']} exercises.
-2. Every single exercise MUST have exactly {volume['sets_per_exercise']} sets.
-3. Every single exercise MUST have the rep range '{volume['rep_range']}'.
-4. Every single exercise MUST have a rest period of {volume['rest_between_sets_seconds']} seconds.
-5. Provide a specific science-backed tip from the RAG context in the notes for each exercise.
-6. MANDATORY MUSCLE COVERAGE: You have exactly {volume['exercises_per_session'] * request.days_per_week} total exercise slots for the entire week. You MUST assign at least 1 exercise to EVERY single major muscle group (Chest, Back, Quads, Hamstrings, Shoulders, Biceps, Triceps, Calves, Core) BEFORE you assign a second exercise to any muscle group. Do not ignore Hamstrings or Calves!
-7. EXACT NAMES ONLY: You MUST use the exact `name` string from the JSON inventory provided. Do not shorten or modify names (e.g., use "Barbell Bench Press", NOT "Bench Press").
-"""
+        training_program_prompt = get_training_program_prompt(
+            request.days_per_week,
+            request.goal,
+            volume,
+            rag_context,
+            available_exercises_json
+        )
 
         messages = [
-            {"role": "system", "content": "You are a professional strength and conditioning coach."},
+            {"role": "system", "content": get_training_system_prompt()},
             {"role": "user", "content": training_program_prompt}
         ]
 
@@ -131,7 +113,7 @@ Rules:
                 print(f"Validation failed on attempt {attempt + 1}. Errors: {errors}")
                 if attempt < max_retries - 1:
                     messages.append({"role": "assistant", "content": program.model_dump_json()})
-                    messages.append({"role": "user", "content": f"Your generated program failed validation with the following errors:\n" + "\n".join(errors) + "\nPlease correct your mistakes and regenerate the program."})
+                    messages.append({"role": "user", "content": get_validation_retry_prompt(errors)})
                 else:
                     print("Max retries reached. Returning program with warnings.")
 
@@ -165,35 +147,16 @@ Rules:
         available_exercises = self.exercise_service.get_filtered_exercises(equipment=request.equipment)
         available_exercises_json = json.dumps(available_exercises, indent=2)
 
-        training_program_prompt = f"""
-You are an elite, science-based strength and conditioning coach. 
-Your task is to build a {request.days_per_week}-day training program for a {request.goal} goal.
-
-### TARGET VOLUME SETTINGS (Hit these exactly):
-- Sets per exercise: {volume['sets_per_exercise']}
-- Exercises per session: {volume['exercises_per_session']}
-- Rep range: {volume['rep_range']}
-- Rest between sets: {volume['rest_between_sets_seconds']} seconds
-
-### SPORTS SCIENCE CONTEXT (Follow this strictly):
-{rag_context}
-
-### AVAILABLE EXERCISE INVENTORY:
-You MUST ONLY choose exercises from this JSON inventory. You cannot invent new exercises.
-{available_exercises_json}
-
-Rules:
-1. Every single session MUST have exactly {volume['exercises_per_session']} exercises.
-2. Every single exercise MUST have exactly {volume['sets_per_exercise']} sets.
-3. Every single exercise MUST have the rep range '{volume['rep_range']}'.
-4. Every single exercise MUST have a rest period of {volume['rest_between_sets_seconds']} seconds.
-5. Provide a specific science-backed tip from the RAG context in the notes for each exercise.
-6. MANDATORY MUSCLE COVERAGE: You have exactly {volume['exercises_per_session'] * request.days_per_week} total exercise slots for the entire week. You MUST assign at least 1 exercise to EVERY single major muscle group (Chest, Back, Quads, Hamstrings, Shoulders, Biceps, Triceps, Calves, Core) BEFORE you assign a second exercise to any muscle group. Do not ignore Hamstrings or Calves!
-7. EXACT NAMES ONLY: You MUST use the exact `name` string from the JSON inventory provided. Do not shorten or modify names (e.g., use "Barbell Bench Press", NOT "Bench Press").
-"""
+        training_program_prompt = get_training_program_prompt(
+            request.days_per_week,
+            request.goal,
+            volume,
+            rag_context,
+            available_exercises_json
+        )
 
         messages = [
-            {"role": "system", "content": "You are a professional strength and conditioning coach."},
+            {"role": "system", "content": get_training_system_prompt()},
             {"role": "user", "content": training_program_prompt}
         ]
 
@@ -218,7 +181,7 @@ Rules:
                 if attempt < max_retries - 1:
                     yield {"status": f"validation failed. recalculating..."}
                     messages.append({"role": "assistant", "content": program.model_dump_json()})
-                    messages.append({"role": "user", "content": f"Your generated program failed validation with the following errors:\n" + "\n".join(errors) + "\nPlease correct your mistakes and regenerate the program."})
+                    messages.append({"role": "user", "content": get_validation_retry_prompt(errors)})
                 else:
                     yield {"status": "max retries reached. forcing output..."}
 

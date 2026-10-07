@@ -5,6 +5,7 @@ from app.models.schemas import DietPlanRequest, DietPlan
 from app.services.meal_service import MealService
 from app.services.rag_service import RAGService
 from app.utils.calculator import CalculatorService, ActivityLevel, Goal
+from app.utils.prompts import get_diet_prompt, get_diet_system_prompt
 
 class DietService:
     def __init__(self, llm_client: genai.GenerativeModel):
@@ -72,34 +73,18 @@ class DietService:
         meal_calorie_targets = self.calculator.calculate_meal_distribution(daily_targets['daily_calories'], request.meals_per_day)
         meal_calorie_targets_text = "\n".join([f"- {target['meal_time']}: {target['target_calories']} kcal" for target in meal_calorie_targets])
 
-        diet_plan_prompt = f"""
-You are an elite, science-based sports nutritionist. 
-Your task is to build a {request.meals_per_day}-meal diet plan that EXACTLY hits these daily targets:
-- Calories: {daily_targets['daily_calories']} kcal
-- Protein: {daily_targets['protein_g']}g
-- Carbs: {daily_targets['carbs_g']}g
-- Fat: {daily_targets['fat_g']}g
-
-### EXACT CALORIE DISTRIBUTION (MANDATORY):
-You MUST assign exactly these calories to the respective meals. Do not deviate.
-{meal_calorie_targets_text}
-
-### SPORTS SCIENCE CONTEXT (Follow this strictly):
-{sports_science_context}
-
-### AVAILABLE MEAL INVENTORY:
-You MUST ONLY choose meals from this JSON inventory. Match light meals (like Greek Yogurt or Casein) to small calorie slots, and heavy meals (like Chicken Rice) to large calorie slots.
-{available_meals_json}
-
-Rules:
-1. Choose exactly {request.meals_per_day} meals from the inventory. Use their EXACT names.
-2. You MUST assign the `target_calories` to each meal EXACTLY as specified in the EXACT CALORIE DISTRIBUTION section above.
-"""
+        diet_plan_prompt = get_diet_prompt(
+            request.meals_per_day,
+            daily_targets,
+            meal_calorie_targets_text,
+            sports_science_context,
+            available_meals_json
+        )
 
         llm_plan: DietPlan = self.structured_client.chat.completions.create(
             response_model=DietPlan,
             messages=[
-                {"role": "system", "content": "You are a professional sports nutritionist."},
+                {"role": "system", "content": get_diet_system_prompt()},
                 {"role": "user", "content": diet_plan_prompt}
             ]
         )
@@ -170,35 +155,19 @@ Rules:
         meal_calorie_targets = self.calculator.calculate_meal_distribution(daily_targets['daily_calories'], request.meals_per_day)
         meal_calorie_targets_text = "\n".join([f"- {target['meal_time']}: {target['target_calories']} kcal" for target in meal_calorie_targets])
 
-        diet_plan_prompt = f"""
-You are an elite, science-based sports nutritionist. 
-Your task is to build a {request.meals_per_day}-meal diet plan that EXACTLY hits these daily targets:
-- Calories: {daily_targets['daily_calories']} kcal
-- Protein: {daily_targets['protein_g']}g
-- Carbs: {daily_targets['carbs_g']}g
-- Fat: {daily_targets['fat_g']}g
-
-### EXACT CALORIE DISTRIBUTION (MANDATORY):
-You MUST assign exactly these calories to the respective meals. Do not deviate.
-{meal_calorie_targets_text}
-
-### SPORTS SCIENCE CONTEXT (Follow this strictly):
-{sports_science_context}
-
-### AVAILABLE MEAL INVENTORY:
-You MUST ONLY choose meals from this JSON inventory. Match light meals (like Greek Yogurt or Casein) to small calorie slots, and heavy meals (like Chicken Rice) to large calorie slots.
-{available_meals_json}
-
-Rules:
-1. Choose exactly {request.meals_per_day} meals from the inventory. Use their EXACT names.
-2. You MUST assign the `target_calories` to each meal EXACTLY as specified in the EXACT CALORIE DISTRIBUTION section above.
-"""
+        diet_plan_prompt = get_diet_prompt(
+            request.meals_per_day,
+            daily_targets,
+            meal_calorie_targets_text,
+            sports_science_context,
+            available_meals_json
+        )
 
         yield {"status": "generating meal plan..."}
         llm_plan: DietPlan = self.structured_client.chat.completions.create(
             response_model=DietPlan,
             messages=[
-                {"role": "system", "content": "You are a professional sports nutritionist."},
+                {"role": "system", "content": get_diet_system_prompt()},
                 {"role": "user", "content": diet_plan_prompt}
             ]
         )
