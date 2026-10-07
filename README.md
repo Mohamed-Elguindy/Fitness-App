@@ -101,7 +101,7 @@ graph LR
 
     %% Data & Model Tier
     subgraph Intelligence [Intelligence Layer]
-        LLM[Gemini 3.6 Flash]
+        LLM[Gemini 3.8 Flash]
         VectorDB[(Local Vector Indexes)]
     end
 
