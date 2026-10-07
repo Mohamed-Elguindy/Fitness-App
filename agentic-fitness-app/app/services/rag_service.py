@@ -29,7 +29,7 @@ class RAGService:
         if settings.GEMINI_API_KEY == "dummy_testing_key_for_ci":
             Settings.llm = MockLLM()
         else:
-            Settings.llm = Gemini(model="models/gemini-3.6-flash", api_key=settings.GEMINI_API_KEY)
+            Settings.llm = Gemini(model="models/gemini-3.8-flash", api_key=settings.GEMINI_API_KEY)
             
         Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
             
@@ -45,29 +45,29 @@ class RAGService:
         self.router = self._build_router()
 
     def _build_index_from_jsonl(self, domain: str) -> VectorStoreIndex:
-        nodes = []
+        text_nodes = []
         if not self.chunks_jsonl_path.exists():
             raise FileNotFoundError(f"Missing chunks file: {self.chunks_jsonl_path}")
             
-        with open(self.chunks_jsonl_path, "r", encoding="utf-8") as f:
-            for line in f:
-                data = json.loads(line)
-                if data["corpus"] == domain:
-                    node = TextNode(
-                        text=data["text"],
+        with open(self.chunks_jsonl_path, "r", encoding="utf-8") as chunk_file:
+            for line in chunk_file:
+                chunk_data = json.loads(line)
+                if chunk_data["corpus"] == domain:
+                    text_node = TextNode(
+                        text=chunk_data["text"],
                         metadata={
-                            "source_file": data["source_file"],
-                            "title": data["title"],
-                            "section": data["section"]
+                            "source_file": chunk_data["source_file"],
+                            "title": chunk_data["title"],
+                            "section": chunk_data["section"]
                         }
                     )
-                    nodes.append(node)
+                    text_nodes.append(text_node)
                     
-        if not nodes:
+        if not text_nodes:
             raise ValueError(f"No chunks found for domain: {domain}")
             
-        print(f"Building {domain} index from {len(nodes)} pre-computed chunks...")
-        return VectorStoreIndex(nodes)
+        print(f"Building {domain} index from {len(text_nodes)} pre-computed chunks...")
+        return VectorStoreIndex(text_nodes)
 
     def _build_index_from_directory(self, domain: str) -> VectorStoreIndex:
         data_path = self.data_dir / domain
@@ -75,9 +75,9 @@ class RAGService:
             raise FileNotFoundError(f"Missing data directory: {data_path}")
             
         print(f"Reading documents for {domain}...")
-        docs = SimpleDirectoryReader(str(data_path)).load_data()
+        documents = SimpleDirectoryReader(str(data_path)).load_data()
         print(f"Building {domain} index from raw documents...")
-        return VectorStoreIndex.from_documents(docs)
+        return VectorStoreIndex.from_documents(documents)
 
     def _get_index(self, domain: str) -> VectorStoreIndex:
         domain_storage_path = self.storage_dir / domain
@@ -101,10 +101,10 @@ class RAGService:
 
     def _get_hybrid_retriever(self, domain: str, similarity_top_k: int = 3):
         index = self._get_index(domain)
-        nodes = list(index.docstore.docs.values())
-        actual_k = min(similarity_top_k, len(nodes)) if nodes else 1
+        text_nodes = list(index.docstore.docs.values())
+        actual_top_k = min(similarity_top_k, len(text_nodes)) if text_nodes else 1
         
-        vector_retriever = index.as_retriever(similarity_top_k=actual_k * 3)
+        vector_retriever = index.as_retriever(similarity_top_k=actual_top_k * 3)
         return vector_retriever
 
     def _build_router(self) -> RouterQueryEngine:
@@ -121,30 +121,30 @@ class RAGService:
             device="cpu"
         )
 
-        fitness_qe = RetrieverQueryEngine.from_args(
+        fitness_query_engine = RetrieverQueryEngine.from_args(
             fitness_retriever,
             node_postprocessors=[reranker]
         )
-        mentality_qe = RetrieverQueryEngine.from_args(
+        mentality_query_engine = RetrieverQueryEngine.from_args(
             mentality_retriever,
             node_postprocessors=[reranker]
         )
-        general_qe = RetrieverQueryEngine.from_args(
+        general_query_engine = RetrieverQueryEngine.from_args(
             general_retriever,
             node_postprocessors=[reranker]
         )
 
         fitness_tool = QueryEngineTool.from_defaults(
-            query_engine=fitness_qe,
+            query_engine=fitness_query_engine,
             description="Useful for answering physiological, nutritional, and workout programming questions about bulking, cutting, and gym exercises like bench press, deadlift, and lat pulldown."
         )
 
         mentality_tool = QueryEngineTool.from_defaults(
-            query_engine=mentality_qe,
+            query_engine=mentality_query_engine,
             description="Useful for addressing discipline, lack of motivation, fatigue, wanting to quit, or any psychological barriers using intense tough-love advice."
         )
         general_tool = QueryEngineTool.from_defaults(
-            query_engine=general_qe,
+            query_engine=general_query_engine,
             description="Useful for any question that is NOT related to fitness, gym training, nutrition, bulking, cutting, or workout mentality. Use this for all off-topic questions."
         )
 
@@ -161,12 +161,12 @@ class RAGService:
         query = f"What are the most important sports science rules for meal timing, protein distribution, and nutrient partitioning for a {goal} diet? Special considerations: {dietary_restrictions}."
         print(f"RAG Diet Query: {query}")
         retriever = self._get_hybrid_retriever("nutrition", similarity_top_k=2)
-        nodes = retriever.retrieve(query)
-        return "\n\n".join([n.node.text.strip() for n in nodes])
+        retrieved_nodes = retriever.retrieve(query)
+        return "\n\n".join([scored_node.node.text.strip() for scored_node in retrieved_nodes])
 
     def get_training_context(self, goal: str, days_per_week: int, equipment: str, injuries: str = "none") -> str:
         query = f"What are the scientific rules for exercise selection, fatigue management, and volume for a {goal} program that trains {days_per_week} days a week using {equipment} equipment? Special injury considerations: {injuries}."
         print(f"RAG Training Query: {query}")
         retriever = self._get_hybrid_retriever("training", similarity_top_k=2)
-        nodes = retriever.retrieve(query)
-        return "\n\n".join([n.node.text.strip() for n in nodes])
+        retrieved_nodes = retriever.retrieve(query)
+        return "\n\n".join([scored_node.node.text.strip() for scored_node in retrieved_nodes])
