@@ -44,65 +44,44 @@ class RAGService:
         
         os.makedirs(self.storage_dir, exist_ok=True)
         
+        # In-memory caches to prevent rebuilding indexes and BM25 retrievers on every request
+        self._indexes: dict[str, VectorStoreIndex] = {}
+        self._retrievers: dict[tuple, QueryFusionRetriever] = {}
+
         # Initialize Router
         self.router = self._build_router()
 
-    def _build_index_from_jsonl(self, domain: str) -> VectorStoreIndex:
-        text_nodes = []
-        if not self.chunks_jsonl_path.exists():
-            raise FileNotFoundError(f"Missing chunks file: {self.chunks_jsonl_path}")
-            
-        with open(self.chunks_jsonl_path, "r", encoding="utf-8") as chunk_file:
-            for line in chunk_file:
-                chunk_data = json.loads(line)
-                if chunk_data["corpus"] == domain:
-                    text_node = TextNode(
-                        text=chunk_data["text"],
-                        metadata={
-                            "source_file": chunk_data["source_file"],
-                            "title": chunk_data["title"],
-                            "section": chunk_data["section"]
-                        }
-                    )
-                    text_nodes.append(text_node)
-                    
-        if not text_nodes:
-            raise ValueError(f"No chunks found for domain: {domain}")
-            
-        print(f"Building {domain} index from {len(text_nodes)} pre-computed chunks...")
-        return VectorStoreIndex(text_nodes)
+    # --- Public Query APIs (The Headlines) ---
 
-    def _build_index_from_directory(self, domain: str) -> VectorStoreIndex:
-        data_path = self.data_dir / domain
-        if not data_path.exists():
-            raise FileNotFoundError(f"Missing data directory: {data_path}")
-            
-        print(f"Reading documents for {domain}...")
-        documents = SimpleDirectoryReader(str(data_path)).load_data()
-        print(f"Building {domain} index from raw documents...")
-        return VectorStoreIndex.from_documents(documents)
+    def ask_coach(self, prompt: str) -> str:
+        """Route conversational user query to the appropriate domain engine."""
+        response = self.router.query(prompt)
+        return str(response)
 
-    def _get_index(self, domain: str) -> VectorStoreIndex:
-        domain_storage_path = self.storage_dir / domain
-        
-        if domain_storage_path.exists() and any(domain_storage_path.iterdir()):
-            print(f"Loading {domain} index from storage...")
-            storage_context = StorageContext.from_defaults(persist_dir=str(domain_storage_path))
-            return load_index_from_storage(storage_context)
-            
-        if domain in ["nutrition", "training"]:
-            index = self._build_index_from_jsonl(domain)
-        elif domain in ["fitness_and_diet", "mentality", "general"]:
-            index = self._build_index_from_directory(domain)
-        else:
-            raise ValueError(f"Unknown domain: {domain}")
-            
-        print(f"Persisting {domain} index to storage...")
-        index.storage_context.persist(persist_dir=str(domain_storage_path))
-        
-        return index
+    def get_diet_context(self, goal: str, dietary_restrictions: str = "none") -> str:
+        """Retrieve hybrid nutrition context for diet generation."""
+        query = get_rag_diet_query(goal, dietary_restrictions)
+        print(f"RAG Diet Query: {query}")
+        retriever = self._get_hybrid_retriever("nutrition", similarity_top_k=2)
+        retrieved_nodes = retriever.retrieve(query)
+        return "\n\n".join([scored_node.node.text.strip() for scored_node in retrieved_nodes])
 
-    def _get_hybrid_retriever(self, domain: str, similarity_top_k: int = 3):
+    def get_training_context(self, goal: str, days_per_week: int, equipment: str, injuries: str = "none") -> str:
+        """Retrieve hybrid training context for workout program generation."""
+        query = get_rag_training_query(goal, days_per_week, equipment, injuries)
+        print(f"RAG Training Query: {query}")
+        retriever = self._get_hybrid_retriever("training", similarity_top_k=2)
+        retrieved_nodes = retriever.retrieve(query)
+        return "\n\n".join([scored_node.node.text.strip() for scored_node in retrieved_nodes])
+
+    # --- Retrieval & Router Pipeline ---
+
+    def _get_hybrid_retriever(self, domain: str, similarity_top_k: int = 3) -> QueryFusionRetriever:
+        """Build and cache hybrid retriever combining dense vector search and sparse BM25 keyword search."""
+        cache_key = (domain, similarity_top_k)
+        if cache_key in self._retrievers:
+            return self._retrievers[cache_key]
+
         index = self._get_index(domain)
         text_nodes = list(index.docstore.docs.values())
         actual_top_k = min(similarity_top_k, len(text_nodes)) if text_nodes else 1
@@ -121,9 +100,11 @@ class RAGService:
             mode="reciprocal_rank_fusion"
         )
         
+        self._retrievers[cache_key] = hybrid_retriever
         return hybrid_retriever
 
     def _build_router(self) -> RouterQueryEngine:
+        """Build the multi-tool RouterQueryEngine with cross-encoder reranking."""
         from llama_index.core.postprocessor import SentenceTransformerRerank
         
         fitness_retriever = self._get_hybrid_retriever("fitness_and_diet")
@@ -171,20 +152,67 @@ class RAGService:
             query_engine_tools=[fitness_tool, mentality_tool, general_tool]
         )
 
-    def ask_coach(self, prompt: str) -> str:
-        response = self.router.query(prompt)
-        return str(response)
+    # --- Storage & Index Management ---
 
-    def get_diet_context(self, goal: str, dietary_restrictions: str = "none") -> str:
-        query = get_rag_diet_query(goal, dietary_restrictions)
-        print(f"RAG Diet Query: {query}")
-        retriever = self._get_hybrid_retriever("nutrition", similarity_top_k=2)
-        retrieved_nodes = retriever.retrieve(query)
-        return "\n\n".join([scored_node.node.text.strip() for scored_node in retrieved_nodes])
+    def _get_index(self, domain: str) -> VectorStoreIndex:
+        """Load index from cache or disk storage, or build it if missing."""
+        if domain in self._indexes:
+            return self._indexes[domain]
 
-    def get_training_context(self, goal: str, days_per_week: int, equipment: str, injuries: str = "none") -> str:
-        query = get_rag_training_query(goal, days_per_week, equipment, injuries)
-        print(f"RAG Training Query: {query}")
-        retriever = self._get_hybrid_retriever("training", similarity_top_k=2)
-        retrieved_nodes = retriever.retrieve(query)
-        return "\n\n".join([scored_node.node.text.strip() for scored_node in retrieved_nodes])
+        domain_storage_path = self.storage_dir / domain
+        
+        if domain_storage_path.exists() and any(domain_storage_path.iterdir()):
+            print(f"Loading {domain} index from storage...")
+            storage_context = StorageContext.from_defaults(persist_dir=str(domain_storage_path))
+            index = load_index_from_storage(storage_context)
+            self._indexes[domain] = index
+            return index
+            
+        if domain in ["nutrition", "training"]:
+            index = self._build_index_from_jsonl(domain)
+        elif domain in ["fitness_and_diet", "mentality", "general"]:
+            index = self._build_index_from_directory(domain)
+        else:
+            raise ValueError(f"Unknown domain: {domain}")
+            
+        print(f"Persisting {domain} index to storage...")
+        index.storage_context.persist(persist_dir=str(domain_storage_path))
+        self._indexes[domain] = index
+        return index
+
+    def _build_index_from_jsonl(self, domain: str) -> VectorStoreIndex:
+        """Build VectorStoreIndex from pre-computed chunk dataset."""
+        text_nodes = []
+        if not self.chunks_jsonl_path.exists():
+            raise FileNotFoundError(f"Missing chunks file: {self.chunks_jsonl_path}")
+            
+        with open(self.chunks_jsonl_path, "r", encoding="utf-8") as chunk_file:
+            for line in chunk_file:
+                chunk_data = json.loads(line)
+                if chunk_data["corpus"] == domain:
+                    text_node = TextNode(
+                        text=chunk_data["text"],
+                        metadata={
+                            "source_file": chunk_data["source_file"],
+                            "title": chunk_data["title"],
+                            "section": chunk_data["section"]
+                        }
+                    )
+                    text_nodes.append(text_node)
+                    
+        if not text_nodes:
+            raise ValueError(f"No chunks found for domain: {domain}")
+            
+        print(f"Building {domain} index from {len(text_nodes)} pre-computed chunks...")
+        return VectorStoreIndex(text_nodes)
+
+    def _build_index_from_directory(self, domain: str) -> VectorStoreIndex:
+        """Build VectorStoreIndex from raw files in domain directory."""
+        data_path = self.data_dir / domain
+        if not data_path.exists():
+            raise FileNotFoundError(f"Missing data directory: {data_path}")
+            
+        print(f"Reading documents for {domain}...")
+        documents = SimpleDirectoryReader(str(data_path)).load_data()
+        print(f"Building {domain} index from raw documents...")
+        return VectorStoreIndex.from_documents(documents)
