@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, JSON, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
@@ -22,6 +22,10 @@ class GeneratedDiet(Base):
     diet_json = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    __table_args__ = (
+        Index("ix_generated_diets_user_created", user_id, created_at.desc()),
+    )
+
     user = relationship("User", back_populates="diets")
 
 class GeneratedProgram(Base):
@@ -31,5 +35,9 @@ class GeneratedProgram(Base):
     user_id = Column(String, ForeignKey("users.clerk_id"))
     program_json = Column(JSON)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_generated_programs_user_created", user_id, created_at.desc()),
+    )
 
     user = relationship("User", back_populates="programs")
